@@ -1,6 +1,6 @@
 {
   "baseline_cm": 50,
-  "tail_sec": 6.0,
+  "tail_sec": 4.0,
   "steps": [
     {
       "delay_sec": 0,
@@ -11,6 +11,11 @@
       "delay_sec": 1.0,
       "description": "Object closer than threshold for PROXIMITY_HOLD_SEC (0.5 s)",
       "pin_inputs": [{ "bcm": 24, "value": 40 }]
+    },
+    {
+      "delay_sec": 3.0,
+      "description": "Object removed; distance back above threshold so server stops re-triggering",
+      "pin_inputs": [{ "bcm": 24, "value": 50 }]
     }
   ],
   "expected": {

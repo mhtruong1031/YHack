@@ -11,6 +11,7 @@ import asyncio
 import json
 import logging
 import os
+import signal
 import subprocess
 import sys
 import time
@@ -41,6 +42,28 @@ logger = logging.getLogger(__name__)
 def _load_scenario(path: Path) -> dict:
     with path.open(encoding="utf-8") as f:
         return json.load(f)
+
+
+def _kill_processes_on_tcp_port(port: int) -> None:
+    """Best-effort free ``port`` (e.g. stale virtual Pi) before binding."""
+    try:
+        out = subprocess.check_output(
+            ["lsof", "-ti", f"tcp:{port}"],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        )
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return
+    for line in out.strip().splitlines():
+        line = line.strip()
+        if not line.isdigit():
+            continue
+        pid = int(line)
+        try:
+            os.kill(pid, signal.SIGTERM)
+        except ProcessLookupError:
+            continue
+    time.sleep(0.2)
 
 
 def _scenario_duration_sec(scenario: dict) -> float:
@@ -184,6 +207,7 @@ def main() -> int:
     proc_pi: subprocess.Popen | None = None
     proc_srv: subprocess.Popen | None = None
     try:
+        _kill_processes_on_tcp_port(sim_config.SIM_WS_PORT)
         logger.info("Starting virtual Pi: %s", ws_uri)
         proc_pi = subprocess.Popen(
             [
@@ -199,6 +223,11 @@ def main() -> int:
             stderr=None,
         )
         time.sleep(0.5)
+        if proc_pi.poll() is not None:
+            raise RuntimeError(
+                f"virtual Pi exited early (code {proc_pi.returncode}); "
+                "check port conflicts or logs."
+            )
         asyncio.run(_wait_for_sim(ws_uri))
 
         env_srv = env_base.copy()

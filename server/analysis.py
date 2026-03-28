@@ -64,17 +64,29 @@ def run_cnn(frame: np.ndarray) -> Classification:
     return cast(Classification, config.CNN_CLASS_LABELS[idx])
 
 
+def _blank_frame_jpeg() -> bytes:
+    """Valid JPEG without opening a camera (headless / simulation)."""
+    img = np.zeros((config.CNN_IMAGE_SIZE, config.CNN_IMAGE_SIZE, 3), dtype=np.uint8)
+    ok, buf = cv2.imencode(".jpg", img)
+    if not ok or buf is None:
+        raise RuntimeError("JPEG encode failed for placeholder frame")
+    return buf.tobytes()
+
+
 def analysis_with_frame() -> tuple[Classification, bytes]:
     """
     Capture one frame, encode JPEG, classify (or placeholder label if no weights).
+
+    When ``CNN_MODEL_WEIGHTS_PATH`` is unset, skip the camera and return a fixed
+    label + blank JPEG so orchestration (e.g. simulation) can run headless.
     """
+    if not (config.CNN_MODEL_WEIGHTS_PATH or "").strip():
+        return "waste", _blank_frame_jpeg()
     frame = get_frame()
     ok, buf = cv2.imencode(".jpg", frame)
     if not ok or buf is None:
         raise RuntimeError("JPEG encode failed")
     jpeg_bytes = buf.tobytes()
-    if not (config.CNN_MODEL_WEIGHTS_PATH or "").strip():
-        return "waste", jpeg_bytes
     return run_cnn(frame), jpeg_bytes
 
 
