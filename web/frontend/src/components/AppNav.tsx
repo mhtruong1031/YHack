@@ -1,30 +1,24 @@
 import { NavLink } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 
-const linkStyle = ({ isActive }: { isActive: boolean }) => ({
-  fontWeight: isActive ? 600 : 500,
-  opacity: isActive ? 1 : 0.75,
-});
-
 export function AppNav() {
   const { logout, user } = useAuth0();
   return (
     <nav className="app-nav">
       <div className="app-nav-links">
-        <NavLink to="/explore" style={linkStyle}>
+        <NavLink to="/explore" className={({ isActive }) => (isActive ? "app-nav-link active" : "app-nav-link")}>
           Explore
         </NavLink>
-        <NavLink to="/leaderboard" style={linkStyle}>
+        <NavLink to="/leaderboard" className={({ isActive }) => (isActive ? "app-nav-link active" : "app-nav-link")}>
           Leaderboard
         </NavLink>
-        <NavLink to="/plinko" style={linkStyle}>
+        <NavLink to="/plinko" className={({ isActive }) => (isActive ? "app-nav-link active" : "app-nav-link")}>
           Plinko
         </NavLink>
       </div>
       {user?.name && <span className="muted">{user.name}</span>}
       <button
         type="button"
-        className="nav-logout"
         onClick={() =>
           logout({ logoutParams: { returnTo: window.location.origin } })
         }
@@ -46,10 +40,6 @@ export function AppNav() {
           flex-wrap: wrap;
           gap: 1rem;
           flex: 1;
-        }
-        .nav-logout {
-          padding: 0.35rem 0.75rem;
-          font-size: 0.85rem;
         }
       `}</style>
     </nav>

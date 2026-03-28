@@ -1,51 +1,86 @@
 import { useAuth0 } from "@auth0/auth0-react";
-import { Link } from "react-router-dom";
-import { MacWindow } from "../components/MacWindow";
+import type { MouseEvent } from "react";
+import { Link, NavLink } from "react-router-dom";
+
+const APP_NAV = [
+  { to: "/explore", label: "Explore" },
+  { to: "/leaderboard", label: "Leaderboard" },
+  { to: "/plinko", label: "Plinko" },
+] as const;
 
 export function Splash() {
   const { isAuthenticated, isLoading, loginWithRedirect } = useAuth0();
 
+  const start = () => {
+    if (isAuthenticated) return;
+    loginWithRedirect({
+      appState: { returnTo: "/explore" },
+    });
+  };
+
+  const handleProtectedNav = (
+    path: string,
+    e: MouseEvent<HTMLAnchorElement>
+  ) => {
+    if (isLoading) {
+      e.preventDefault();
+      return;
+    }
+    if (!isAuthenticated) {
+      e.preventDefault();
+      loginWithRedirect({ appState: { returnTo: path } });
+    }
+  };
+
   return (
-    <div className="page-wrap">
-      <MacWindow title="Recycle Social">
-        <div className="stack" style={{ alignItems: "center", textAlign: "center" }}>
-          <h1 style={{ margin: 0, fontSize: "1.65rem", fontWeight: 700 }}>
-            Sort smarter. Compete with friends.
-          </h1>
-          <p className="muted" style={{ maxWidth: "28rem", margin: 0 }}>
-            Track recycling impact, climb the leaderboard, and drop Plinko rewards
-            from your sorted items.
+    <div className="landing">
+      <header className="landing-nav">
+        <Link to="/" className="landing-nav-brand">
+          DumpsterFire
+        </Link>
+        <nav className="landing-nav-links" aria-label="Main">
+          {APP_NAV.map(({ to, label }) => (
+            <NavLink
+              key={to}
+              to={to}
+              onClick={(e) => handleProtectedNav(to, e)}
+            >
+              {label}
+            </NavLink>
+          ))}
+        </nav>
+      </header>
+
+      <main>
+        <section className="landing-hero" aria-label="Introduction">
+          <h1>Recycling. Made Social.</h1>
+          <p className="landing-hero-sub">
+            Sort smarter, see your impact, and compete with friends—all in one
+            place.
           </p>
-          {isLoading ? (
-            <p className="muted">Loading…</p>
-          ) : isAuthenticated ? (
-            <div className="row" style={{ justifyContent: "center" }}>
+          <div className="landing-hero-cta">
+            {isLoading ? (
+              <p className="muted" style={{ margin: 0 }}>
+                Loading…
+              </p>
+            ) : isAuthenticated ? (
               <Link to="/explore">
-                <button type="button" className="primary">
-                  Go to app
+                <button type="button" className="landing-cta-liquid">
+                  Get started
                 </button>
               </Link>
-            </div>
-          ) : (
-            <div className="row" style={{ justifyContent: "center" }}>
+            ) : (
               <button
                 type="button"
-                className="primary"
-                onClick={() =>
-                  loginWithRedirect({
-                    appState: { returnTo: "/explore" },
-                  })
-                }
+                className="landing-cta-liquid"
+                onClick={start}
               >
-                Log in
+                Get started
               </button>
-              <Link to="/login">
-                <button type="button">Auth page</button>
-              </Link>
-            </div>
-          )}
-        </div>
-      </MacWindow>
+            )}
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

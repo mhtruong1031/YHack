@@ -5,6 +5,7 @@ import Matter from "matter-js";
 import { MacWindow } from "../components/MacWindow";
 import { AppNav } from "../components/AppNav";
 import { postPlinkoAward } from "../lib/api";
+import { formatUsd } from "../lib/formatUsd";
 import { getPlinkoWebSocketUrl } from "../lib/plinkoWs";
 
 type DropMsg = {
@@ -15,14 +16,14 @@ type DropMsg = {
   gemini_value?: number | null;
 };
 
-function buildSlotPoints(baseUsd: number): number[] {
-  const base = Math.max(5, Math.round(Math.max(0, baseUsd) * 100));
+/** Cosmetic slot labels: shares of the item’s estimated deposit value (USD). */
+function buildSlotDisplayUsd(baseUsd: number): number[] {
   const mults = [0.55, 0.82, 1.28, 0.82, 0.55];
+  const base = Math.max(0, baseUsd);
   return mults.map((m, i) => {
-    const jitter = (Math.random() - 0.5) * base * 0.1;
-    let v = Math.round(base * m + jitter);
-    if (i === 2) v = Math.max(v, Math.round(base * 1.12));
-    return Math.max(1, v);
+    let v = base * m;
+    if (i === 2) v = Math.max(v, base * 1.12);
+    return Math.round(v * 100) / 100;
   });
 }
 
@@ -48,7 +49,7 @@ export function Plinko() {
     height: number;
     wallThick: number;
   } | null>(null);
-  const slotPointsRef = useRef<number[]>([10, 20, 40, 20, 10]);
+  const slotPointsRef = useRef<number[]>(buildSlotDisplayUsd(0));
   const activeDropRef = useRef<{
     drop_id: string;
     gemini_value?: number | null;
@@ -216,17 +217,24 @@ export function Plinko() {
             const rel = ball.position.x - wallThick;
             let idx = Math.floor((rel / innerW) * 5);
             idx = Math.max(0, Math.min(4, idx));
-            const points = slotPointsRef.current[idx] ?? 0;
+            const valueUsd =
+              typeof drop.gemini_value === "number" ? drop.gemini_value : 0;
             awardedRef.current = true;
             void (async () => {
               try {
                 const token = await getAccessTokenSilently(tokenOpts);
-                await postPlinkoAward(token, {
+                const res = await postPlinkoAward(token, {
                   drop_id: drop.drop_id,
-                  points,
-                  gemini_value: drop.gemini_value ?? undefined,
+                  points: valueUsd,
+                  gemini_value: valueUsd,
                 });
-                setAwardStatus(`Awarded ${points} pts`);
+                const item = formatUsd(valueUsd);
+                const total = formatUsd(res.lifetime_points);
+                setAwardStatus(
+                  res.awarded
+                    ? `Added ${item} · Your total: ${total}`
+                    : `This sort was already counted (${item}) · Your total: ${total}`
+                );
               } catch (e) {
                 setAwardStatus(
                   e instanceof Error ? e.message : "Award request failed"
@@ -311,7 +319,7 @@ export function Plinko() {
             const dropId = msg.drop_id;
             const base =
               typeof msg.base_value_usd === "number" ? msg.base_value_usd : 0;
-            const points = buildSlotPoints(base);
+            const points = buildSlotDisplayUsd(base);
             const m = matterRef.current;
             if (m) {
               rebuildBoard(m.width, points);
@@ -387,7 +395,7 @@ export function Plinko() {
   }, [getAccessTokenSilently, rebuildBoard, tokenOpts]);
 
   return (
-    <div className="page-wrap" style={{ alignItems: "stretch" }}>
+    <div className="page-wrap">
       <MacWindow title="Plinko">
         <AppNav />
         <div className="row" style={{ marginBottom: "0.75rem" }}>
@@ -401,8 +409,9 @@ export function Plinko() {
           </Link>
         </div>
         <p className="muted" style={{ marginTop: 0 }}>
-          Balls spawn when the server sends a <code>drop</code> event. Rest in a slot
-          to post your score.
+          When your device sends a sort, a ball appears here. Your total recycled value
+          updates from that request; finishing in a slot confirms the same deposit
+          estimate in your ledger (no extra “points” from the slot).
         </p>
         <div
           ref={panelRef}
@@ -437,7 +446,7 @@ export function Plinko() {
                 className="badge"
                 style={{ padding: "0.35rem 0.25rem" }}
               >
-                {v} pts
+                {formatUsd(v)}
               </div>
             ))}
           </div>

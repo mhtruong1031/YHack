@@ -6,12 +6,13 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, UploadFile, status
 from PIL import Image
+from pymongo.errors import DuplicateKeyError
 
 from app.config import Settings, get_settings
 from app.db import get_database
 from app.services.gemini_service import estimate_recyclable_value_usd
 from app.services.plinko_manager import plinko_manager
-from app.timeutil import utc_now
+from app.timeutil import utc_now, week_id_for
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/internal", tags=["internal"])
@@ -76,10 +77,24 @@ async def ingest_drop(
         )
     else:
         only = next(iter(subs))
+        value_usd = float(gemini_value)
+        ledger_doc = {
+            "user_sub": only,
+            "points": value_usd,
+            "source": "device",
+            "drop_id": drop_id,
+            "week_id": week_id_for(),
+            "gemini_value": value_usd,
+            "created_at": utc_now(),
+        }
+        try:
+            await db.point_ledger.insert_one(ledger_doc)
+        except DuplicateKeyError:
+            logger.debug("ledger already has drop_id=%s for user", drop_id)
         payload = {
             "type": "drop",
             "drop_id": drop_id,
-            "base_value_usd": float(gemini_value),
+            "base_value_usd": value_usd,
             "image_base64": f"data:image/jpeg;base64,{b64}",
         }
         await plinko_manager.broadcast_to_sub(only, payload)

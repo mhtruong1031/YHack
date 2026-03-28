@@ -5,6 +5,7 @@ import { MacWindow } from "../components/MacWindow";
 import { AppNav } from "../components/AppNav";
 import {
   acceptFriend,
+  getMe,
   getPendingFriends,
   rejectFriend,
   requestFriend,
@@ -12,6 +13,7 @@ import {
   type PendingFriend,
   type UserSearchHit,
 } from "../lib/api";
+import { formatUsd } from "../lib/formatUsd";
 
 export function Explore() {
   const { getAccessTokenSilently } = useAuth0();
@@ -22,8 +24,26 @@ export function Explore() {
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [myRecycledUsd, setMyRecycledUsd] = useState<number | null>(null);
 
   const tokenOpts = audience ? { authorizationParams: { audience } } : undefined;
+
+  const refreshMeTotal = useCallback(async () => {
+    try {
+      const token = await getAccessTokenSilently(tokenOpts);
+      const me = await getMe(token);
+      const t = me.totals?.lifetime_points;
+      setMyRecycledUsd(typeof t === "number" ? t : 0);
+    } catch {
+      /* ignore */
+    }
+  }, [getAccessTokenSilently, audience]);
+
+  useEffect(() => {
+    void refreshMeTotal();
+    const id = window.setInterval(() => void refreshMeTotal(), 4000);
+    return () => clearInterval(id);
+  }, [refreshMeTotal]);
 
   const refreshPending = useCallback(async () => {
     try {
@@ -105,11 +125,15 @@ export function Explore() {
   }
 
   return (
-    <div className="page-wrap" style={{ alignItems: "stretch" }}>
+    <div className="page-wrap">
       <MacWindow title="Explore">
         <AppNav />
         <div className="row" style={{ marginBottom: "0.5rem" }}>
-          <Link to="/" className="muted">
+          <span className="badge" title="Updates when your hardware sends a new sort">
+            Your recycled value:{" "}
+            {myRecycledUsd === null ? "…" : formatUsd(myRecycledUsd)}
+          </span>
+          <Link to="/" className="muted" style={{ marginLeft: "auto" }}>
             Home
           </Link>
         </div>

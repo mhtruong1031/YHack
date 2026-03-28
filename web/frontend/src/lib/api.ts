@@ -19,6 +19,8 @@ export type Me = {
   nickname?: string;
   picture?: string;
   email?: string;
+  /** Sum of estimated recyclable deposit value (USD) from device + completed drops */
+  totals?: { lifetime_points: number };
 };
 
 export async function getMe(token: string): Promise<Me> {
@@ -126,11 +128,12 @@ export async function rejectFriend(token: string, from_sub: string): Promise<voi
 export async function postPlinkoAward(
   token: string,
   body: { drop_id: string; points: number; gemini_value?: number | null }
-): Promise<void> {
+): Promise<{ awarded: boolean; lifetime_points: number }> {
   const r = await apiFetch("/api/plinko/award", {
     method: "POST",
     token,
     body: JSON.stringify(body),
   });
   if (!r.ok) throw new Error(await r.text());
+  return r.json() as Promise<{ awarded: boolean; lifetime_points: number }>;
 }

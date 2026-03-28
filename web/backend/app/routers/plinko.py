@@ -25,13 +25,14 @@ async def plinko_award(
     if gem is None:
         gem = 0.0
 
+    value_usd = float(gem)
     doc = {
         "user_sub": sub,
-        "points": float(body.points),
+        "points": value_usd,
         "source": "plinko",
         "drop_id": body.drop_id,
         "week_id": week_id_for(),
-        "gemini_value": float(gem),
+        "gemini_value": value_usd,
         "created_at": utc_now(),
     }
     try:
@@ -42,7 +43,12 @@ async def plinko_award(
 
     pipeline = [
         {"$match": {"user_sub": sub}},
-        {"$group": {"_id": None, "t": {"$sum": "$points"}}},
+        {
+            "$group": {
+                "_id": None,
+                "t": {"$sum": {"$ifNull": ["$gemini_value", 0]}},
+            }
+        },
     ]
     total = 0.0
     async for row in db.point_ledger.aggregate(pipeline):

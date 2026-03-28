@@ -42,7 +42,12 @@ async def leaderboard(
 
     pipeline = [
         {"$match": match},
-        {"$group": {"_id": "$user_sub", "points": {"$sum": "$points"}}},
+        {
+            "$group": {
+                "_id": "$user_sub",
+                "points": {"$sum": {"$ifNull": ["$gemini_value", 0]}},
+            }
+        },
     ]
     agg: dict[str, float] = {}
     async for row in db.point_ledger.aggregate(pipeline):

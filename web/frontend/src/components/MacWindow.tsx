@@ -22,14 +22,15 @@ export function MacWindow({ title, children, className = "" }: MacWindowProps) {
       <style>{`
         .mac-window {
           width: min(960px, 100%);
-          max-height: min(90vh, 900px);
+          height: min(85vh, 820px);
+          min-height: 320px;
           display: flex;
           flex-direction: column;
           border-radius: 12px;
           overflow: hidden;
           background: var(--glass-bg);
-          backdrop-filter: blur(28px) saturate(1.35);
-          -webkit-backdrop-filter: blur(28px) saturate(1.35);
+          backdrop-filter: blur(10px) saturate(1.12);
+          -webkit-backdrop-filter: blur(10px) saturate(1.12);
           border: 1px solid var(--glass-border);
           box-shadow: var(--glass-shadow);
         }
@@ -38,7 +39,7 @@ export function MacWindow({ title, children, className = "" }: MacWindowProps) {
           align-items: center;
           gap: 0.5rem;
           padding: 0.55rem 0.75rem;
-          background: rgba(0, 0, 0, 0.12);
+          background: rgba(0, 0, 0, 0.22);
           border-bottom: 1px solid rgba(255, 255, 255, 0.08);
           flex-shrink: 0;
         }

@@ -4,6 +4,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { MacWindow } from "../components/MacWindow";
 import { AppNav } from "../components/AppNav";
 import { getLeaderboard, type LeaderboardEntry } from "../lib/api";
+import { formatUsd } from "../lib/formatUsd";
 
 export function Leaderboard() {
   const { getAccessTokenSilently } = useAuth0();
@@ -17,9 +18,11 @@ export function Leaderboard() {
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setErr(null);
+  const load = useCallback(async (quiet?: boolean) => {
+    if (!quiet) {
+      setLoading(true);
+      setErr(null);
+    }
     try {
       const token = await getAccessTokenSilently({
         authorizationParams: audience ? { audience } : undefined,
@@ -27,9 +30,11 @@ export function Leaderboard() {
       const data = await getLeaderboard(token, scope);
       setRows(data);
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Failed to load leaderboard");
+      if (!quiet) {
+        setErr(e instanceof Error ? e.message : "Failed to load leaderboard");
+      }
     } finally {
-      setLoading(false);
+      if (!quiet) setLoading(false);
     }
   }, [getAccessTokenSilently, scope, audience]);
 
@@ -37,12 +42,17 @@ export function Leaderboard() {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    const id = window.setInterval(() => void load(true), 5000);
+    return () => clearInterval(id);
+  }, [load]);
+
   const setScope = (next: "lifetime" | "weekly") => {
     setSearchParams(next === "lifetime" ? {} : { scope: next });
   };
 
   return (
-    <div className="page-wrap" style={{ alignItems: "stretch" }}>
+    <div className="page-wrap">
       <MacWindow title="Leaderboard">
         <AppNav />
         <div className="row" style={{ marginBottom: "1rem" }}>
@@ -74,7 +84,7 @@ export function Leaderboard() {
                 <tr>
                   <th>#</th>
                   <th>Friend</th>
-                  <th>Points</th>
+                  <th>Recycled value</th>
                 </tr>
               </thead>
               <tbody>
@@ -89,7 +99,7 @@ export function Leaderboard() {
                     <tr key={r.sub}>
                       <td>{r.rank ?? i + 1}</td>
                       <td>{r.name ?? r.sub}</td>
-                      <td>{r.points}</td>
+                      <td>{formatUsd(r.points)}</td>
                     </tr>
                   ))
                 )}

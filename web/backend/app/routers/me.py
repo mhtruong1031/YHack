@@ -61,7 +61,15 @@ async def _sum_user_points(db, user_sub: str, scope: str) -> float:
 
         match["week_id"] = week_id_for()
     cursor = db.point_ledger.aggregate(
-        [{"$match": match}, {"$group": {"_id": None, "t": {"$sum": "$points"}}}]
+        [
+            {"$match": match},
+            {
+                "$group": {
+                    "_id": None,
+                    "t": {"$sum": {"$ifNull": ["$gemini_value", 0]}},
+                }
+            },
+        ]
     )
     async for row in cursor:
         return float(row.get("t", 0.0))
