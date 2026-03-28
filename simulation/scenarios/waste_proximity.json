@@ -1,0 +1,20 @@
+{
+  "baseline_cm": 50,
+  "tail_sec": 6.0,
+  "steps": [
+    {
+      "delay_sec": 0,
+      "description": "Start at baseline distance (far, above threshold 48 cm)",
+      "pin_inputs": [{ "bcm": 24, "value": 50 }]
+    },
+    {
+      "delay_sec": 1.0,
+      "description": "Object closer than threshold for PROXIMITY_HOLD_SEC (0.5 s)",
+      "pin_inputs": [{ "bcm": 24, "value": 40 }]
+    }
+  ],
+  "expected": {
+    "max_during_sort": { "5": 90, "12": 45, "19": 0 },
+    "final_pins": { "5": 0, "12": 0, "19": 0 }
+  }
+}
