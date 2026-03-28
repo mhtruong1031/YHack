@@ -2,8 +2,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import Matter from "matter-js";
-import { MacWindow } from "../components/MacWindow";
-import { AppNav } from "../components/AppNav";
+import { AppLayout } from "../components/AppLayout";
 import { postPlinkoAward } from "../lib/api";
 import { formatUsd } from "../lib/formatUsd";
 import { getPlinkoWebSocketUrl } from "../lib/plinkoWs";
@@ -395,10 +394,8 @@ export function Plinko() {
   }, [getAccessTokenSilently, rebuildBoard, tokenOpts]);
 
   return (
-    <div className="page-wrap">
-      <MacWindow title="Plinko">
-        <AppNav />
-        <div className="row" style={{ marginBottom: "0.75rem" }}>
+    <AppLayout>
+      <div className="row" style={{ marginBottom: "0.75rem" }}>
           <span className="badge">
             WS: {wsStatus === "open" ? "live" : wsStatus}
           </span>
@@ -451,7 +448,6 @@ export function Plinko() {
             ))}
           </div>
         </div>
-      </MacWindow>
-    </div>
+    </AppLayout>
   );
 }

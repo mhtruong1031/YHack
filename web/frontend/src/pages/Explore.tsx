@@ -1,8 +1,7 @@
 import { useAuth0 } from "@auth0/auth0-react";
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { MacWindow } from "../components/MacWindow";
-import { AppNav } from "../components/AppNav";
+import { AppLayout } from "../components/AppLayout";
 import {
   acceptFriend,
   getMe,
@@ -125,10 +124,8 @@ export function Explore() {
   }
 
   return (
-    <div className="page-wrap">
-      <MacWindow title="Explore">
-        <AppNav />
-        <div className="row" style={{ marginBottom: "0.5rem" }}>
+    <AppLayout>
+      <div className="row" style={{ marginBottom: "0.5rem" }}>
           <span className="badge" title="Updates when your hardware sends a new sort">
             Your recycled value:{" "}
             {myRecycledUsd === null ? "…" : formatUsd(myRecycledUsd)}
@@ -210,7 +207,6 @@ export function Explore() {
             ))}
           </ul>
         )}
-      </MacWindow>
-    </div>
+    </AppLayout>
   );
 }

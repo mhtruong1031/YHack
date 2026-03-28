@@ -1,8 +1,7 @@
 import { useAuth0 } from "@auth0/auth0-react";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { MacWindow } from "../components/MacWindow";
-import { AppNav } from "../components/AppNav";
+import { AppLayout } from "../components/AppLayout";
 import { getLeaderboard, type LeaderboardEntry } from "../lib/api";
 import { formatUsd } from "../lib/formatUsd";
 
@@ -52,10 +51,8 @@ export function Leaderboard() {
   };
 
   return (
-    <div className="page-wrap">
-      <MacWindow title="Leaderboard">
-        <AppNav />
-        <div className="row" style={{ marginBottom: "1rem" }}>
+    <AppLayout>
+      <div className="row" style={{ marginBottom: "1rem" }}>
           <span className="muted">Scope</span>
           <button
             type="button"
@@ -107,7 +104,6 @@ export function Leaderboard() {
             </table>
           </div>
         )}
-      </MacWindow>
-    </div>
+    </AppLayout>
   );
 }
