@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 _PROMPT = (
     "Return a single JSON object only. No markdown, no code fences, no other text.\n"
     'Schema: {"usd_value": <number>, "object_identity": <string>}\n'
-    "- usd_value: estimated USD recyclable deposit value for the main object; use 0 if trash or not recyclable.\n"
+    "- usd_value: estimated USD recyclable deposit value for the main object\n"
     '- object_identity: short debug label describing the main object (e.g. "plastic water bottle").\n'
 )
 
