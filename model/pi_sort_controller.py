@@ -7,7 +7,7 @@ from adafruit_servokit import ServoKit
 # =========================
 # Config
 # =========================
-ASUS_PREDICT_URL = "http://10.66.151.86:8000/predict""
+ASUS_PREDICT_URL = "http://10.66.218.112:8000/predict"
 
 CAMERA_INDEX = 0
 CAMERA_WIDTH = 1280
