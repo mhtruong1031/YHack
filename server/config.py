@@ -75,7 +75,7 @@ API_KEY_ENV = "SORT_API_KEY"
 
 # Drop / ingest: POST captured frame JPEG after a sort cycle.
 # If DROP_API_URL is unset, default is production Railway. Set DROP_API_URL="" to disable.
-# DROP_API_KEY_ENV names the env var for the Bearer token (same as backend DEVICE_INGEST_SECRET).
+# Bearer for ingest: prefer DROP_API_KEY; if unset, DEVICE_INGEST_SECRET (same name as web backend).
 _RAILWAY_PUBLIC_API_HOST = "yhack-production.up.railway.app"
 _drop_url_env = os.environ.get("DROP_API_URL")
 if _drop_url_env is None:
@@ -91,5 +91,8 @@ def get_api_key() -> str | None:
 
 
 def get_drop_api_key() -> str | None:
-    v = os.environ.get(DROP_API_KEY_ENV)
-    return v if v else None
+    for name in (DROP_API_KEY_ENV, "DEVICE_INGEST_SECRET"):
+        v = os.environ.get(name)
+        if v and str(v).strip():
+            return str(v).strip()
+    return None

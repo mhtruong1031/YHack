@@ -2,7 +2,22 @@
 Raspberry Pi hardware configuration: servos, simulated distance, WebSocket bind.
 """
 
-# Hobby servos (AngularServo): one signal pin each
+import os
+
+# Motor driver: "gpiozero" = GPIO PWM (BCM pins below). "servokit" = PCA9685 I2C
+# (same as servo_test3.py / Adafruit Servo HAT).
+_SERVO_BACKEND_RAW = (os.environ.get("SERVO_BACKEND") or "gpiozero").strip().lower()
+SERVO_BACKEND = (
+    _SERVO_BACKEND_RAW if _SERVO_BACKEND_RAW in ("gpiozero", "servokit") else "gpiozero"
+)
+
+SERVOKIT_NUM_CHANNELS = int(os.environ.get("SERVOKIT_NUM_CHANNELS", "16"), 10)
+SERVOKIT_I2C_ADDRESS = int(os.environ.get("SERVOKIT_I2C_ADDRESS", "0x40"), 16)
+SERVOKIT_CHANNEL_A = int(os.environ.get("SERVOKIT_CHANNEL_A", "0"), 10)
+SERVOKIT_CHANNEL_B = int(os.environ.get("SERVOKIT_CHANNEL_B", "1"), 10)
+SERVOKIT_CHANNEL_C = int(os.environ.get("SERVOKIT_CHANNEL_C", "2"), 10)
+
+# Hobby servos (AngularServo): one signal pin each — used only when SERVO_BACKEND=gpiozero
 SERVO_MOTOR_A_PIN = 5
 SERVO_MOTOR_B_PIN = 12
 SERVO_MOTOR_C_PIN = 19

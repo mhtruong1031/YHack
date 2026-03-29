@@ -2,3 +2,5 @@ gpiozero>=2.0
 websockets>=12.0
 # Pin factory for gpiozero (required on Raspberry Pi OS; not installed automatically with gpiozero alone)
 RPi.GPIO>=0.7.1
+# Optional: PCA9685 / Servo HAT — set SERVO_BACKEND=servokit on the Pi (see README)
+adafruit-circuitpython-servokit>=1.3.0

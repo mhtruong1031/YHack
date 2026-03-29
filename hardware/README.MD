@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Raspberry Pi runs a **WebSocket server** (no ultrasonic hardware in this tree). **`get_distance`** returns a **configurable simulated** distance in cm; **`execute_sort`** drives three **AngularServo** outputs. The **laptop server** ([`../server/`](../server/)) connects, receives `calibrated_avg_cm` in `ready`, polls `get_distance`, runs vision on its camera, and sends **`execute_sort`** with a label. Protocol: [`../shared/protocol.py`](../shared/protocol.py).
+The Raspberry Pi runs a **WebSocket server** (no ultrasonic hardware in this tree). **`get_distance`** returns a **configurable simulated** distance in cm; **`execute_sort`** drives three servos either via **GPIO** (`gpiozero.AngularServo`) or via an **Adafruit Servo HAT / PCA9685** (`adafruit_servokit`, same stack as `servo_test3.py`). The **laptop server** ([`../server/`](../server/)) connects, receives `calibrated_avg_cm` in `ready`, polls `get_distance`, runs vision on its camera, and sends **`execute_sort`** with a label. Protocol: [`../shared/protocol.py`](../shared/protocol.py).
 
 ## Software architecture
 
@@ -10,7 +10,9 @@ The Raspberry Pi runs a **WebSocket server** (no ultrasonic hardware in this tre
 
 | Category | Contents |
 |----------|----------|
-| **GPIO** | `SERVO_MOTOR_A/B/C_PIN` (BCM), servo angle limits |
+| **Backend** | `SERVO_BACKEND`: `gpiozero` (default) or **`servokit`** if you use PCA9685 like `servo_test*.py` — otherwise `execute_sort` only toggles GPIO pins and **nothing moves on the HAT** |
+| **GPIO** | `SERVO_MOTOR_A/B/C_PIN` (BCM) when `SERVO_BACKEND=gpiozero` |
+| **ServoKit** | `SERVOKIT_I2C_ADDRESS` (default `0x40`), `SERVOKIT_CHANNEL_A/B/C` (default `0/1/2`) |
 | **Simulated distance** | `SIMULATED_DISTANCE_CM`, `SIMULATED_CALIBRATED_AVG_CM` (for `ready` baseline) |
 | **WebSocket** | `WS_HOST`, `WS_PORT` (default `8765`) |
 | **Sort motion** | `MOTOR_HOLD_SEC`, per-class angles |
@@ -64,6 +66,8 @@ If gpiozero misbehaves on Pi 5, see the [gpiozero Pi 5 notes](https://gpiozero.r
 
 ```bash
 source .venv/bin/activate
+# If your working tests use ServoKit / HAT (servo_test3.py), not GPIO pins:
+export SERVO_BACKEND=servokit
 python main.py
 ```
 

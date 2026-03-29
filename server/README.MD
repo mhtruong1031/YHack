@@ -21,7 +21,7 @@ Protocol types live in [`../shared/protocol.py`](../shared/protocol.py).
 | `MAX_SORT_RETRIES` | Repeated `execute_sort` while Pi distance deviated (when `PROXIMITY_POLL=1`) |
 | `GEMINI_*`, `CAMERA_DEVICE_INDEX` | Vision and OpenCV device |
 | `API_BASE_URL`, `API_KEY_ENV` | Optional HTTP POST after a cycle |
-| `DROP_API_URL`, `DROP_API_KEY_ENV` | Optional multipart POST of frame JPEG |
+| `DROP_API_URL`, `DROP_API_KEY` | Optional multipart POST of frame JPEG; Bearer must match backend `DEVICE_INGEST_SECRET` (or set that var instead of `DROP_API_KEY`) |
 
 ## Setup
 
@@ -43,7 +43,7 @@ source .venv/bin/activate
 python main.py
 ```
 
-Set `API_KEY` via the env name in `API_KEY_ENV` (default `SORT_API_KEY`) when using a protected API. For drop ingest, set `DROP_API_URL` and the secret in the env named by `DROP_API_KEY_ENV`.
+Set `API_KEY` via the env name in `API_KEY_ENV` (default `SORT_API_KEY`) when using a protected API. For drop ingest, set `DROP_API_URL` (optional; defaults to production) and **`DROP_API_KEY`** or **`DEVICE_INGEST_SECRET`** (same value as Railway / `web/backend`).
 
 ## Layout
 

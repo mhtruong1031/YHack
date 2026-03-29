@@ -41,7 +41,7 @@ def notify_sort_result(label: str, extra: dict | None = None) -> None:
 def notify_drop_image(jpeg_bytes: bytes, classification: str | None = None) -> None:
     """
     POST multipart/form-data: field ``image`` (frame.jpg, image/jpeg), optional
-    ``classification`` text. Bearer from env named DROP_API_KEY_ENV if set.
+    ``classification`` text. Bearer from ``DROP_API_KEY`` or ``DEVICE_INGEST_SECRET``.
     """
     url = (config.DROP_API_URL or "").strip()
     if not url:
@@ -62,6 +62,11 @@ def notify_drop_image(jpeg_bytes: bytes, classification: str | None = None) -> N
     key = config.get_drop_api_key()
     if key:
         headers["Authorization"] = f"Bearer {key}"
+    else:
+        logger.warning(
+            "api_client: drop ingest URL set but no secret; set DROP_API_KEY or "
+            "DEVICE_INGEST_SECRET (401 likely)"
+        )
 
     try:
         r = requests.post(
