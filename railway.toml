@@ -1,0 +1,10 @@
+# Deploy from repo root. Set variables in Railway (see dashboard): MONGODB_URI, AUTH0_*,
+# GEMINI_API_KEY, DEVICE_INGEST_SECRET, CORS_ORIGINS (your public https URL).
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+healthcheckPath = "/health"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10

@@ -1,2 +1,4 @@
 web/backend/.env
 web/frontend/.env
+# Built SPA copied locally for testing; Docker image bakes dist here at build time
+web/backend/static

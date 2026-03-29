@@ -50,15 +50,15 @@ body,
   display: block;
 }
 
-/* Light veil so glass UI stays readable — was a heavy dark gradient before */
+/* Dark veil over video so glass UI stays readable */
 .app-bg-scrim {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(5, 10, 26, 0.12) 0%,
-    rgba(5, 10, 26, 0.06) 40%,
-    rgba(5, 10, 26, 0.14) 100%
+    rgba(5, 10, 26, 0.55) 0%,
+    rgba(5, 10, 26, 0.42) 40%,
+    rgba(5, 10, 26, 0.58) 100%
   );
   pointer-events: none;
 }

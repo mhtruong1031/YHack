@@ -2,9 +2,12 @@ import asyncio
 import logging
 import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 load_dotenv()
 from fastapi.middleware.cors import CORSMiddleware
@@ -77,6 +80,38 @@ async def ws_plinko(websocket: WebSocket, token: str) -> None:
         pass
     finally:
         plinko_manager.unregister(sub, websocket)
+
+
+def _mount_spa_if_present(application: FastAPI) -> None:
+    static_root = Path(__file__).resolve().parent / "static"
+    index = static_root / "index.html"
+    if not index.is_file():
+        return
+    assets = static_root / "assets"
+    if assets.is_dir():
+        application.mount("/assets", StaticFiles(directory=str(assets)), name="spa_assets")
+
+    @application.get("/", include_in_schema=False)
+    async def spa_index() -> FileResponse:
+        return FileResponse(index)
+
+    @application.get("/{full_path:path}", include_in_schema=False)
+    async def spa_fallback(full_path: str) -> FileResponse:
+        # Unmatched /api/* and /internal/* would hit this catch-all; return API-style 404.
+        if full_path.startswith(("api/", "internal/")):
+            raise HTTPException(status_code=404)
+        try:
+            candidate = (static_root / full_path).resolve()
+            static_resolved = static_root.resolve()
+            candidate.relative_to(static_resolved)
+        except ValueError:
+            return FileResponse(index)
+        if candidate.is_file():
+            return FileResponse(candidate)
+        return FileResponse(index)
+
+
+_mount_spa_if_present(app)
 
 
 if __name__ == "__main__":
