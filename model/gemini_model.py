@@ -17,7 +17,7 @@ COOLDOWN_SECONDS = 3.0
 BASELINE_RESET_SECONDS = 2.0
 
 # Optional: set this False if you are running headless
-SHOW_PREVIEW = True
+SHOW_PREVIEW = False
 
 client = genai.Client(api_key=GEMINI_API_KEY)
 
@@ -166,8 +166,8 @@ def main():
                     (255, 255, 0),
                     2,
                 )
-
-            cv2.imshow("Smart Bin Camera Trigger", display)
+	    if SHOW_PREVIEW:
+            	cv2.imshow("Smart Bin Camera Trigger", display)
 
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
