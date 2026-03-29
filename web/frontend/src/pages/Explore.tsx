@@ -141,7 +141,7 @@ export function Explore() {
         <div className="fade-in-up-delay-1">
           <input
             type="search"
-            placeholder="Search by name…"
+            placeholder="Search by name or @handle…"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             style={{ maxWidth: "100%", boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}

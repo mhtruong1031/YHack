@@ -30,6 +30,8 @@ function AppWithAuth() {
       clientId={clientId}
       authorizationParams={{
         redirect_uri: window.location.origin,
+        // openid + profile + email so access token can call Auth0 /userinfo (API tokens often omit claims).
+        scope: "openid profile email",
         ...(audience ? { audience } : {}),
       }}
       onRedirectCallback={(appState) => {

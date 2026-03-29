@@ -72,6 +72,55 @@ async def decode_auth0_token(
     return payload
 
 
+async def fetch_auth0_userinfo(domain: str, access_token: str) -> dict[str, Any] | None:
+    """
+    Access tokens for a custom API audience often omit name/email/picture.
+    Auth0's /userinfo returns those when the token includes openid (and profile/email scopes).
+    """
+    url = f"https://{domain.rstrip('/')}/userinfo"
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            r = await client.get(
+                url,
+                headers={"Authorization": f"Bearer {access_token}"},
+            )
+            if r.status_code != 200:
+                logger.debug(
+                    "Auth0 userinfo HTTP %s: %s",
+                    r.status_code,
+                    (r.text or "")[:200],
+                )
+                return None
+            data = r.json()
+            return data if isinstance(data, dict) else None
+    except Exception as e:
+        logger.warning("Auth0 userinfo request failed: %s", e)
+        return None
+
+
+def merge_claims_and_userinfo(
+    claims: dict[str, Any],
+    userinfo: dict[str, Any] | None,
+) -> dict[str, Any]:
+    """Prefer userinfo for standard OIDC profile keys when present."""
+    if not userinfo:
+        return dict(claims)
+    out = dict(claims)
+    for key in (
+        "email",
+        "email_verified",
+        "name",
+        "nickname",
+        "picture",
+        "given_name",
+        "family_name",
+    ):
+        val = userinfo.get(key)
+        if val is not None and val != "":
+            out[key] = val
+    return out
+
+
 async def get_current_user(
     creds: Annotated[HTTPAuthorizationCredentials | None, Depends(security)],
     settings: Annotated[Settings, Depends(get_settings)],

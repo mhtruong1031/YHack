@@ -10,13 +10,13 @@ from app.models import User
 router = APIRouter(prefix="/api/users", tags=["users"])
 
 
-def _like_prefix(s: str) -> str:
-    return (
-        s.replace("\\", "\\\\")
-        .replace("%", "\\%")
-        .replace("_", "\\_")
-        + "%"
-    )
+def _like_escape(s: str) -> str:
+    return s.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
+def _like_contains(s: str) -> str:
+    """SQL ILIKE pattern: substring match anywhere (not only prefix)."""
+    return f"%{_like_escape(s)}%"
 
 
 @router.get("/search")
@@ -25,6 +25,11 @@ async def search_users(
     user: dict[str, Any] = Depends(get_current_user),
     q: str = Query("", min_length=1),
 ) -> dict[str, Any]:
+    """
+    Search other users by **display name** or **@handle** (case-insensitive substring).
+
+    ``name`` comes from Auth0 ``name`` or ``nickname`` (see ``/api/me`` upsert).
+    """
     raw = q.strip()
     if not raw:
         raise HTTPException(
@@ -32,7 +37,7 @@ async def search_users(
             detail="q required",
         )
     me = user["sub"]
-    pattern = _like_prefix(raw)
+    pattern = _like_contains(raw)
     stmt = (
         select(User)
         .where(
