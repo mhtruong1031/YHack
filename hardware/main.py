@@ -14,6 +14,17 @@ import distance
 import motors
 from ws_service import run_hardware_ws
 
+from adafruit_servokit import ServoKit
+import time
+
+kit = ServoKit(channels=16, address=0x40)
+
+# Center all
+kit.servo[0].angle = 0
+kit.servo[1].angle = 180
+kit.servo[2].angle = 90
+time.sleep(2)
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(name)s: %(message)s",
