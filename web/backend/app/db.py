@@ -1,45 +1,91 @@
-from urllib.parse import urlparse
+from collections.abc import AsyncIterator
 
-from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 
 from app.config import get_settings
 
-_client: AsyncIOMotorClient | None = None
-_DEFAULT_DB = "recycling"
+_engine: AsyncEngine | None = None
+_session_factory: async_sessionmaker[AsyncSession] | None = None
 
 
-def get_client() -> AsyncIOMotorClient:
-    global _client
-    if _client is None:
-        _client = AsyncIOMotorClient(get_settings().mongodb_uri)
-    return _client
+def normalize_async_database_url(url: str) -> str:
+    """Runtime async SQLAlchemy uses psycopg3 async (postgresql+psycopg_async://)."""
+    u = url.strip()
+    if u.startswith("postgresql+psycopg_async://"):
+        return u
+    if u.startswith("postgresql+asyncpg://"):
+        rest = u[len("postgresql+asyncpg://") :]
+        return f"postgresql+psycopg_async://{rest}"
+    if u.startswith("postgresql://"):
+        rest = u[len("postgresql://") :]
+        return f"postgresql+psycopg_async://{rest}"
+    if u.startswith("postgres://"):
+        rest = u[len("postgres://") :]
+        return f"postgresql+psycopg_async://{rest}"
+    return u
 
 
-def get_database() -> AsyncIOMotorDatabase:
-    client = get_client()
-    path = urlparse(get_settings().mongodb_uri).path.strip("/")
-    if path:
-        name = path.split("/")[0]
-        return client[name]
-    return client[_DEFAULT_DB]
+def sync_database_url_for_alembic(url: str) -> str:
+    """Alembic runs sync migrations; use psycopg3 sync driver."""
+    u = url.strip()
+    for prefix in (
+        "postgresql+psycopg_async://",
+        "postgresql+asyncpg://",
+        "postgresql://",
+        "postgres://",
+    ):
+        if u.startswith(prefix):
+            rest = u[len(prefix) :]
+            return f"postgresql+psycopg://{rest}"
+    return u
 
 
-async def init_indexes() -> None:
-    db = get_database()
-    await db.users.create_index("handle", unique=True, sparse=True)
-    await db.friend_edges.create_index(
-        [("from_sub", 1), ("to_sub", 1)],
-        unique=True,
-        partialFilterExpression={"status": "pending"},
-        name="unique_pending_direction",
-    )
-    await db.friend_edges.create_index([("to_sub", 1), ("status", 1)])
-    await db.friend_edges.create_index([("from_sub", 1), ("status", 1)])
-    await db.point_ledger.create_index(
-        [("user_sub", 1), ("drop_id", 1)],
-        unique=True,
-        name="unique_award_per_drop",
-    )
-    await db.point_ledger.create_index([("user_sub", 1), ("week_id", 1)])
-    await db.drops.create_index("drop_id", unique=True)
-    await db.users.create_index("name")
+def get_engine() -> AsyncEngine:
+    global _engine
+    if _engine is None:
+        _engine = create_async_engine(
+            normalize_async_database_url(get_settings().database_url),
+            pool_pre_ping=True,
+        )
+    return _engine
+
+
+def get_session_factory() -> async_sessionmaker[AsyncSession]:
+    global _session_factory
+    if _session_factory is None:
+        _session_factory = async_sessionmaker(
+            get_engine(),
+            class_=AsyncSession,
+            expire_on_commit=False,
+            autoflush=False,
+        )
+    return _session_factory
+
+
+async def get_session() -> AsyncIterator[AsyncSession]:
+    factory = get_session_factory()
+    async with factory() as session:
+        try:
+            yield session
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise
+
+
+async def dispose_engine() -> None:
+    global _engine, _session_factory
+    if _engine is not None:
+        await _engine.dispose()
+        _engine = None
+        _session_factory = None
+
+
+__all__ = [
+    "dispose_engine",
+    "get_engine",
+    "get_session",
+    "get_session_factory",
+    "normalize_async_database_url",
+    "sync_database_url_for_alembic",
+]

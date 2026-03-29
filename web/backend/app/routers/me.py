@@ -1,12 +1,16 @@
-from typing import Annotated, Any
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pymongo.errors import DuplicateKeyError
+from sqlalchemy import func, select
+from sqlalchemy.dialects.postgresql import insert as pg_insert
+from sqlalchemy.exc import IntegrityError
 
 from app.auth import get_current_user
-from app.db import get_database
+from app.deps import DbSession
+from app.models import PointLedger, User
 from app.schemas import MePatchBody
 from app.timeutil import utc_now
+
 router = APIRouter(prefix="/api", tags=["me"])
 
 
@@ -21,67 +25,64 @@ def _claims_profile(claims: dict[str, Any]) -> dict[str, Any]:
 
 @router.get("/me")
 async def get_me(
-    user: Annotated[dict[str, Any], Depends(get_current_user)],
+    session: DbSession,
+    user: dict[str, Any] = Depends(get_current_user),
 ) -> dict[str, Any]:
-    db = get_database()
     cp = _claims_profile(user)
     sub = cp["sub"]
     now = utc_now()
-    await db.users.update_one(
-        {"sub": sub},
-        {
-            "$set": {
+    stmt = (
+        pg_insert(User)
+        .values(
+            sub=sub,
+            email=cp["email"],
+            name=cp["name"],
+            picture=cp["picture"],
+            updated_at=now,
+        )
+        .on_conflict_do_update(
+            index_elements=["sub"],
+            set_={
                 "email": cp["email"],
                 "name": cp["name"],
                 "picture": cp["picture"],
                 "updated_at": now,
             },
-            "$setOnInsert": {"sub": sub},
-        },
-        upsert=True,
+        )
     )
-    doc = await db.users.find_one({"sub": sub})
-    total_points = await _sum_user_points(db, sub, scope="lifetime")
-    out = {
-        "sub": doc.get("sub"),
-        "email": doc.get("email"),
-        "name": doc.get("name"),
-        "picture": doc.get("picture"),
-        "handle": doc.get("handle"),
-        "updated_at": doc.get("updated_at"),
+    await session.execute(stmt)
+    await session.flush()
+    row = await session.get(User, sub)
+    total_points = await _sum_user_points(session, sub, scope="lifetime")
+    return {
+        "sub": row.sub if row else sub,
+        "email": row.email if row else None,
+        "name": row.name if row else None,
+        "picture": row.picture if row else None,
+        "handle": row.handle if row else None,
+        "updated_at": row.updated_at if row else None,
         "totals": {"lifetime_points": total_points},
     }
-    return out
 
 
-async def _sum_user_points(db, user_sub: str, scope: str) -> float:
-    match: dict[str, Any] = {"user_sub": user_sub}
+async def _sum_user_points(session, user_sub: str, scope: str) -> float:
+    q = select(func.coalesce(func.sum(PointLedger.gemini_value), 0.0)).where(
+        PointLedger.user_sub == user_sub
+    )
     if scope == "weekly":
         from app.timeutil import week_id_for
 
-        match["week_id"] = week_id_for()
-    cursor = db.point_ledger.aggregate(
-        [
-            {"$match": match},
-            {
-                "$group": {
-                    "_id": None,
-                    "t": {"$sum": {"$ifNull": ["$gemini_value", 0]}},
-                }
-            },
-        ]
-    )
-    async for row in cursor:
-        return float(row.get("t", 0.0))
-    return 0.0
+        q = q.where(PointLedger.week_id == week_id_for())
+    total = (await session.execute(q)).scalar_one()
+    return float(total or 0.0)
 
 
 @router.patch("/me")
 async def patch_me(
+    session: DbSession,
     body: MePatchBody,
-    user: Annotated[dict[str, Any], Depends(get_current_user)],
+    user: dict[str, Any] = Depends(get_current_user),
 ) -> dict[str, Any]:
-    db = get_database()
     sub = user["sub"]
     if body.handle is not None:
         handle = body.handle.strip().lower()
@@ -91,27 +92,29 @@ async def patch_me(
                 detail="handle cannot be empty",
             )
         try:
-            await db.users.update_one(
-                {"sub": sub},
-                {
-                    "$set": {"handle": handle, "updated_at": utc_now()},
-                    "$setOnInsert": {"sub": sub},
-                },
-                upsert=True,
+            stmt = (
+                pg_insert(User)
+                .values(sub=sub, handle=handle, updated_at=utc_now())
+                .on_conflict_do_update(
+                    index_elements=["sub"],
+                    set_={"handle": handle, "updated_at": utc_now()},
+                )
             )
-        except DuplicateKeyError:
+            await session.execute(stmt)
+            await session.flush()
+        except IntegrityError:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="handle already taken",
             ) from None
-    doc = await db.users.find_one({"sub": sub})
-    if not doc:
+    row = await session.get(User, sub)
+    if not row:
         raise HTTPException(status_code=404, detail="user not found")
     return {
-        "sub": doc["sub"],
-        "email": doc.get("email"),
-        "name": doc.get("name"),
-        "picture": doc.get("picture"),
-        "handle": doc.get("handle"),
-        "updated_at": doc.get("updated_at"),
+        "sub": row.sub,
+        "email": row.email,
+        "name": row.name,
+        "picture": row.picture,
+        "handle": row.handle,
+        "updated_at": row.updated_at,
     }

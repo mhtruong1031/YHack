@@ -10,7 +10,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    mongodb_uri: str
+    database_url: str
     auth0_domain: str
     auth0_audience: str
     gemini_api_key: str

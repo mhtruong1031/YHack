@@ -1,10 +1,11 @@
-from typing import Annotated, Any
+from typing import Any
 
 from fastapi import APIRouter, Depends
-from pymongo.errors import DuplicateKeyError
+from sqlalchemy import func, select
 
 from app.auth import get_current_user
-from app.db import get_database
+from app.deps import DbSession
+from app.models import Drop, PointLedger
 from app.schemas import PlinkoAwardBody
 from app.timeutil import utc_now, week_id_for
 
@@ -13,46 +14,48 @@ router = APIRouter(prefix="/api/plinko", tags=["plinko"])
 
 @router.post("/award")
 async def plinko_award(
+    session: DbSession,
     body: PlinkoAwardBody,
-    user: Annotated[dict[str, Any], Depends(get_current_user)],
+    user: dict[str, Any] = Depends(get_current_user),
 ) -> dict[str, Any]:
-    db = get_database()
     sub = user["sub"]
-    drop = await db.drops.find_one({"drop_id": body.drop_id})
+    drop = await session.get(Drop, body.drop_id)
     gem = body.gemini_value
     if gem is None and drop is not None:
-        gem = float(drop.get("gemini_value", 0.0))
+        gem = float(drop.gemini_value)
     if gem is None:
         gem = 0.0
 
     value_usd = float(gem)
-    doc = {
-        "user_sub": sub,
-        "points": value_usd,
-        "source": "plinko",
-        "drop_id": body.drop_id,
-        "week_id": week_id_for(),
-        "gemini_value": value_usd,
-        "created_at": utc_now(),
-    }
-    try:
-        await db.point_ledger.insert_one(doc)
+    existing = (
+        await session.execute(
+            select(PointLedger.id).where(
+                PointLedger.user_sub == sub,
+                PointLedger.drop_id == body.drop_id,
+            )
+        )
+    ).scalar_one_or_none()
+    if existing is None:
+        session.add(
+            PointLedger(
+                user_sub=sub,
+                points=value_usd,
+                source="plinko",
+                drop_id=body.drop_id,
+                week_id=week_id_for(),
+                gemini_value=value_usd,
+                created_at=utc_now(),
+            )
+        )
+        await session.flush()
         awarded = True
-    except DuplicateKeyError:
+    else:
         awarded = False
 
-    pipeline = [
-        {"$match": {"user_sub": sub}},
-        {
-            "$group": {
-                "_id": None,
-                "t": {"$sum": {"$ifNull": ["$gemini_value", 0]}},
-            }
-        },
-    ]
-    total = 0.0
-    async for row in db.point_ledger.aggregate(pipeline):
-        total = float(row.get("t", 0.0))
+    total_q = select(func.coalesce(func.sum(PointLedger.gemini_value), 0.0)).where(
+        PointLedger.user_sub == sub
+    )
+    total = float((await session.execute(total_q)).scalar_one() or 0.0)
 
     return {
         "awarded": awarded,

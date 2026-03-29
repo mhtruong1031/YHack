@@ -9,8 +9,8 @@ React SPA + FastAPI backend: Auth0 login, friend graph, friend-scoped leaderboar
 
 ## Quick start
 
-1. **MongoDB** running locally or Atlas URI with DB name in path (e.g. `mongodb://localhost:27017/recycling`).
-2. **Backend**: copy `backend/.env.example` → `backend/.env`, fill `MONGODB_URI`, `AUTH0_DOMAIN`, `AUTH0_AUDIENCE`, `GEMINI_API_KEY`, `DEVICE_INGEST_SECRET`. Run from `backend/` with venv + `pip install -r requirements.txt` + `uvicorn main:app --reload`.
+1. **PostgreSQL** (e.g. [Supabase](https://supabase.com)): copy **`DATABASE_URL`** from Project Settings → Database (URI). Run migrations from `backend/`: `alembic upgrade head`.
+2. **Backend**: copy `backend/.env.example` → `backend/.env`, fill `DATABASE_URL`, `AUTH0_DOMAIN`, `AUTH0_AUDIENCE`, `GEMINI_API_KEY`, `DEVICE_INGEST_SECRET`. Run from `backend/` with venv + `pip install -r requirements.txt` + `uvicorn main:app --reload`.
 3. **Auth0**: SPA app + API (audience). Allowed callback/logout URLs for dev (e.g. `http://localhost:5173`).
 4. **Frontend**: copy `frontend/.env.example` → `frontend/.env`, set `VITE_AUTH0_*` and optionally `VITE_API_BASE_URL` (omit to use Vite proxy to `:8000`).
 5. **Laptop server** ([`../server/`](../server/)): set `DROP_API_URL` (e.g. `http://localhost:8000/internal/drops`) and `DROP_API_KEY` to the same value as `DEVICE_INGEST_SECRET` so captured JPEGs hit the API after each sort cycle.

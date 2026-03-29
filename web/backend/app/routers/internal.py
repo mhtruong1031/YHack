@@ -6,10 +6,11 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, UploadFile, status
 from PIL import Image
-from pymongo.errors import DuplicateKeyError
+from sqlalchemy import select
 
 from app.config import Settings, get_settings
-from app.db import get_database
+from app.deps import DbSession
+from app.models import Drop, PointLedger
 from app.services.gemini_service import estimate_recyclable_value_usd
 from app.services.plinko_manager import plinko_manager
 from app.timeutil import utc_now, week_id_for
@@ -47,6 +48,7 @@ def _resize_jpeg_max_side(data: bytes, max_side: int = 512, quality: int = 82) -
 
 @router.post("/drops", dependencies=[Depends(_device_auth)])
 async def ingest_drop(
+    session: DbSession,
     settings: Annotated[Settings, Depends(get_settings)],
     image: UploadFile = File(...),
     classification: str | None = Form(None),
@@ -58,15 +60,16 @@ async def ingest_drop(
     gemini_value = await estimate_recyclable_value_usd(jpeg, settings)
     drop_id = str(uuid.uuid4())
     b64 = base64.b64encode(jpeg).decode("ascii")
-    db = get_database()
-    doc = {
-        "drop_id": drop_id,
-        "gemini_value": float(gemini_value),
-        "classification": classification,
-        "image_base64": b64,
-        "created_at": utc_now(),
-    }
-    await db.drops.insert_one(doc)
+    session.add(
+        Drop(
+            drop_id=drop_id,
+            gemini_value=float(gemini_value),
+            classification=classification,
+            image_base64=b64,
+            created_at=utc_now(),
+        )
+    )
+    await session.flush()
 
     subs = plinko_manager.distinct_connected_subs()
     if len(subs) != 1:
@@ -78,19 +81,27 @@ async def ingest_drop(
     else:
         only = next(iter(subs))
         value_usd = float(gemini_value)
-        ledger_doc = {
-            "user_sub": only,
-            "points": value_usd,
-            "source": "device",
-            "drop_id": drop_id,
-            "week_id": week_id_for(),
-            "gemini_value": value_usd,
-            "created_at": utc_now(),
-        }
-        try:
-            await db.point_ledger.insert_one(ledger_doc)
-        except DuplicateKeyError:
-            logger.debug("ledger already has drop_id=%s for user", drop_id)
+        existing_ledger = (
+            await session.execute(
+                select(PointLedger.id).where(
+                    PointLedger.user_sub == only,
+                    PointLedger.drop_id == drop_id,
+                )
+            )
+        ).scalar_one_or_none()
+        if existing_ledger is None:
+            session.add(
+                PointLedger(
+                    user_sub=only,
+                    points=value_usd,
+                    source="device",
+                    drop_id=drop_id,
+                    week_id=week_id_for(),
+                    gemini_value=value_usd,
+                    created_at=utc_now(),
+                )
+            )
+            await session.flush()
         payload = {
             "type": "drop",
             "drop_id": drop_id,

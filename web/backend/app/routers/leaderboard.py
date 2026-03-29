@@ -1,25 +1,28 @@
-from typing import Annotated, Any, Literal
+from typing import Any, Literal
 
 from fastapi import APIRouter, Depends, Query
+from sqlalchemy import func, or_, select
 
 from app.auth import get_current_user
-from app.db import get_database
+from app.deps import DbSession
+from app.models import FriendEdge, PointLedger, User
 from app.timeutil import week_id_for
 
 router = APIRouter(prefix="/api", tags=["leaderboard"])
 
 
-async def _friend_subs(db, me: str) -> list[str]:
-    cursor = db.friend_edges.find(
-        {
-            "status": "accepted",
-            "$or": [{"from_sub": me}, {"to_sub": me}],
-        },
-        {"from_sub": 1, "to_sub": 1},
-    )
+async def _friend_subs(session, me: str) -> list[str]:
+    rows = (
+        await session.execute(
+            select(FriendEdge).where(
+                FriendEdge.status == "accepted",
+                or_(FriendEdge.from_sub == me, FriendEdge.to_sub == me),
+            )
+        )
+    ).scalars().all()
     out: set[str] = set()
-    async for e in cursor:
-        a, b = e["from_sub"], e["to_sub"]
+    for e in rows:
+        a, b = e.from_sub, e.to_sub
         other = b if a == me else a
         out.add(other)
     return list(out)
@@ -27,43 +30,38 @@ async def _friend_subs(db, me: str) -> list[str]:
 
 @router.get("/leaderboard")
 async def leaderboard(
-    user: Annotated[dict[str, Any], Depends(get_current_user)],
+    session: DbSession,
+    user: dict[str, Any] = Depends(get_current_user),
     scope: Literal["lifetime", "weekly"] = Query("lifetime"),
 ) -> dict[str, Any]:
-    db = get_database()
     me = user["sub"]
-    friends = await _friend_subs(db, me)
+    friends = await _friend_subs(session, me)
     if not friends:
         return {"scope": scope, "entries": []}
 
-    match: dict[str, Any] = {"user_sub": {"$in": friends}}
+    q = (
+        select(PointLedger.user_sub, func.coalesce(func.sum(PointLedger.gemini_value), 0.0))
+        .where(PointLedger.user_sub.in_(friends))
+        .group_by(PointLedger.user_sub)
+    )
     if scope == "weekly":
-        match["week_id"] = week_id_for()
+        q = q.where(PointLedger.week_id == week_id_for())
 
-    pipeline = [
-        {"$match": match},
-        {
-            "$group": {
-                "_id": "$user_sub",
-                "points": {"$sum": {"$ifNull": ["$gemini_value", 0]}},
-            }
-        },
-    ]
     agg: dict[str, float] = {}
-    async for row in db.point_ledger.aggregate(pipeline):
-        agg[row["_id"]] = float(row["points"])
+    for user_sub, points in (await session.execute(q)).all():
+        agg[user_sub] = float(points or 0.0)
 
-    users = await db.users.find({"sub": {"$in": friends}}).to_list(length=None)
-    by_sub = {u["sub"]: u for u in users}
+    users = (await session.execute(select(User).where(User.sub.in_(friends)))).scalars().all()
+    by_sub = {u.sub: u for u in users}
 
     entries = []
     for sub in friends:
-        u = by_sub.get(sub, {})
+        u = by_sub.get(sub)
         entries.append(
             {
                 "sub": sub,
-                "name": u.get("name"),
-                "picture": u.get("picture"),
+                "name": u.name if u else None,
+                "picture": u.picture if u else None,
                 "points": agg.get(sub, 0.0),
             }
         )

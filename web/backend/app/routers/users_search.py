@@ -1,43 +1,57 @@
-import re
-from typing import Annotated, Any
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import or_, select
 
 from app.auth import get_current_user
-from app.db import get_database
+from app.deps import DbSession
+from app.models import User
 
 router = APIRouter(prefix="/api/users", tags=["users"])
 
 
+def _like_prefix(s: str) -> str:
+    return (
+        s.replace("\\", "\\\\")
+        .replace("%", "\\%")
+        .replace("_", "\\_")
+        + "%"
+    )
+
+
 @router.get("/search")
 async def search_users(
-    user: Annotated[dict[str, Any], Depends(get_current_user)],
+    session: DbSession,
+    user: dict[str, Any] = Depends(get_current_user),
     q: str = Query("", min_length=1),
 ) -> dict[str, Any]:
-    db = get_database()
-    prefix = re.escape(q.strip())
-    if not prefix:
+    raw = q.strip()
+    if not raw:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="q required",
         )
-    rx = {"$regex": f"^{prefix}", "$options": "i"}
     me = user["sub"]
-    cursor = db.users.find(
-        {
-            "sub": {"$ne": me},
-            "$or": [{"name": rx}, {"handle": rx}],
-        },
-        {"sub": 1, "name": 1, "picture": 1, "handle": 1},
-    ).limit(50)
-    results = []
-    async for doc in cursor:
-        results.append(
-            {
-                "sub": doc["sub"],
-                "name": doc.get("name"),
-                "picture": doc.get("picture"),
-                "handle": doc.get("handle"),
-            }
+    pattern = _like_prefix(raw)
+    stmt = (
+        select(User)
+        .where(
+            User.sub != me,
+            or_(
+                User.name.ilike(pattern, escape="\\"),
+                User.handle.ilike(pattern, escape="\\"),
+            ),
         )
+        .limit(50)
+    )
+    rows = (await session.execute(stmt)).scalars().all()
+    results = [
+        {
+            "sub": doc.sub,
+            "name": doc.name,
+            "picture": doc.picture,
+            "handle": doc.handle,
+        }
+        for doc in rows
+    ]
     return {"results": results}

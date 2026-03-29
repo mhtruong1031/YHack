@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.auth import decode_auth0_token_ws
 from app.config import get_settings
-from app.db import get_client, init_indexes
+from app.db import dispose_engine
 from app.routers import friends, health, internal, leaderboard, me, plinko, users_search
 from app.services.plinko_manager import plinko_manager
 
@@ -24,10 +24,8 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_indexes()
     yield
-    client = get_client()
-    client.close()
+    await dispose_engine()
 
 
 def _cors_origins() -> list[str]:
@@ -97,7 +95,6 @@ def _mount_spa_if_present(application: FastAPI) -> None:
 
     @application.get("/{full_path:path}", include_in_schema=False)
     async def spa_fallback(full_path: str) -> FileResponse:
-        # Unmatched /api/* and /internal/* would hit this catch-all; return API-style 404.
         if full_path.startswith(("api/", "internal/")):
             raise HTTPException(status_code=404)
         try:

@@ -4,7 +4,7 @@ A trash-sorting stack that pairs a **Raspberry Pi** (ultrasonic sensing and serv
 
 ## Architecture
 
-The system is four cooperating layers: **physical edge** (Pi), **orchestrator** (laptop `server/`), **cloud API + DB** (`web/backend` + MongoDB), and **SPA** (`web/frontend`). They talk over two different channels: a **device WebSocket** (Pi protocol in `shared/protocol.py`) and **HTTPS** (REST + optional Auth0 JWT WebSocket for Plinko).
+The system is four cooperating layers: **physical edge** (Pi), **orchestrator** (laptop `server/`), **cloud API + DB** (`web/backend` + PostgreSQL, e.g. **Supabase**), and **SPA** (`web/frontend`). They talk over two different channels: a **device WebSocket** (Pi protocol in `shared/protocol.py`) and **HTTPS** (REST + optional Auth0 JWT WebSocket for Plinko).
 
 ```mermaid
 flowchart LR
@@ -14,7 +14,7 @@ flowchart LR
   subgraph laptop [Laptop server]
     SRV[server/main.py: proximity loop + CNN]
   end
-  subgraph backend [FastAPI + MongoDB]
+  subgraph backend [FastAPI + Postgres]
     API[REST: me, friends, leaderboard, plinko/award]
     INT[internal/drops: device Bearer + multipart]
     WS["/ws/plinko: JWT + drop push"]
@@ -45,7 +45,7 @@ flowchart LR
 |------|------|---------|
 | [`hardware/`](hardware/) | Pi daemon | Calibration, WebSocket server, GPIO (HC-SR04, servos, LED). See [hardware/README.MD](hardware/README.MD). |
 | [`server/`](server/) | Laptop orchestrator | Camera, proximity loop, PyTorch `CnnTrash`, `execute_sort` over WebSocket, optional drop image POST to the API. See [server/README.MD](server/README.MD). |
-| [`web/`](web/) | Full-stack app | Vite + React + TypeScript frontend and FastAPI + MongoDB backend. See [web/README.MD](web/README.MD). |
+| [`web/`](web/) | Full-stack app | Vite + React + TypeScript frontend and FastAPI + PostgreSQL backend. See [web/README.MD](web/README.MD). |
 | [`web/backend/`](web/backend/) | API service | Auth0 JWTs, Gemini drop valuation, Plinko WebSocket, internal ingest. See [web/backend/README.md](web/backend/README.md). |
 | [`model/`](model/) | ML training | YOLO model training (see [model/README.MD](model/README.MD)). |
 | [`shared/`](shared/) | Protocol | JSON message types used by Pi and laptop (`protocol.py`). |
@@ -60,9 +60,9 @@ flowchart LR
 
 ## End-to-end demo (condensed)
 
-For a fuller checklist (MongoDB, Auth0, env files), follow [web/README.MD](web/README.MD).
+For a fuller checklist (Supabase/Postgres, Auth0, env files), follow [web/README.MD](web/README.MD).
 
-1. Run **MongoDB** and configure **`web/backend/.env`** (`MONGODB_URI`, Auth0, `GEMINI_API_KEY`, `DEVICE_INGEST_SECRET`).
+1. Create a **Supabase** (or other Postgres) database, run **`alembic upgrade head`** from `web/backend`, and configure **`web/backend/.env`** (`DATABASE_URL`, Auth0, `GEMINI_API_KEY`, `DEVICE_INGEST_SECRET`).
 2. Start the **backend** from `web/backend/` (`uvicorn main:app --reload --port 8000`).
 3. Configure and run **`hardware/main.py`** on the Pi, then **`server/main.py`** on the laptop with `WS_URL` pointing at the Pi. Set `DROP_API_URL` (e.g. `http://localhost:8000/internal/drops`) and align the drop secret with `DEVICE_INGEST_SECRET`.
 4. Run **`web/frontend`** (`npm run dev`, default `http://localhost:5173`) with Auth0 SPA settings and optional `VITE_API_BASE_URL` / proxy as in [web/README.MD](web/README.MD).
@@ -77,6 +77,6 @@ To exercise the laptop **server** against a **virtual Pi** (no physical board), 
 - [Hardware (Pi)](hardware/README.MD) — GPIO, calibration, WebSocket API, run instructions  
 - [Server (laptop)](server/README.MD) — config, CNN/camera loop, `api_client` / drop upload  
 - [Web app](web/README.MD) — layout, quick start, Auth0 and ingest wiring  
-- [FastAPI backend](web/backend/README.md) — env vars, MongoDB collections, notable routes and WebSocket behavior  
+- [FastAPI backend](web/backend/README.md) — env vars, Postgres tables, Alembic, notable routes and WebSocket behavior  
 - [Model training](model/README.MD) — YOLO training notes  
 - [Simulation](simulation/README.md) — virtual GPIO, Pi vs harness protocols, `run_virtual_pi` / `run_scenario`, scenario JSON expectations  
