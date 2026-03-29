@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class MePatchBody(BaseModel):
@@ -15,5 +15,4 @@ class FriendFromBody(BaseModel):
 
 class PlinkoAwardBody(BaseModel):
     drop_id: str
-    points: float = Field(..., ge=0)
     gemini_value: float | None = None

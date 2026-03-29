@@ -7,3 +7,6 @@ TYPE_ERROR = "error"
 
 TYPE_GET_DISTANCE = "get_distance"
 TYPE_EXECUTE_SORT = "execute_sort"
+
+# CNN output, execute_sort label, and hardware/simulation motions must agree.
+SORT_LABELS: tuple[str, str, str] = ("waste", "recyclable", "compost")

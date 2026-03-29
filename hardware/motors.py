@@ -6,6 +6,7 @@ import time
 from gpiozero import AngularServo
 
 import config
+from shared.protocol import SORT_LABELS
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +63,9 @@ def execute_sort(label: str) -> None:
 
     reset_all()
 
+    if label not in SORT_LABELS:
+        raise ValueError(f"unknown label: {label!r}; expected one of {SORT_LABELS}")
+
     if label == "waste":
         a.angle = config.ANGLE_WASTE_A
         b.angle = config.ANGLE_WASTE_B
@@ -82,8 +86,5 @@ def execute_sort(label: str) -> None:
             config.ANGLE_COMPOST_C,
             hold,
         )
-    else:
-        raise ValueError(f"unknown label: {label!r}")
-
     time.sleep(hold)
     reset_all()

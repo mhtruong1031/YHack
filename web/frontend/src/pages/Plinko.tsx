@@ -224,7 +224,6 @@ export function Plinko() {
                 const token = await getAccessTokenSilently(tokenOpts);
                 const res = await postPlinkoAward(token, {
                   drop_id: drop.drop_id,
-                  points: valueUsd,
                   gemini_value: valueUsd,
                 });
                 const item = formatUsd(valueUsd);

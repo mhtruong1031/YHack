@@ -12,6 +12,7 @@ import torch
 
 import config
 from CnnTrash import CnnTrash
+from shared.protocol import SORT_LABELS
 
 Classification = Literal["waste", "recyclable", "compost"]
 
@@ -81,7 +82,7 @@ def analysis_with_frame() -> tuple[Classification, bytes]:
     label + blank JPEG so orchestration (e.g. simulation) can run headless.
     """
     if not (config.CNN_MODEL_WEIGHTS_PATH or "").strip():
-        return "waste", _blank_frame_jpeg()
+        return cast(Classification, SORT_LABELS[0]), _blank_frame_jpeg()
     frame = get_frame()
     ok, buf = cv2.imencode(".jpg", frame)
     if not ok or buf is None:

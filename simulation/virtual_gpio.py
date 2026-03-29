@@ -5,6 +5,8 @@ from __future__ import annotations
 import asyncio
 import logging
 
+from shared.protocol import SORT_LABELS
+
 from . import config as sim_config
 
 logger = logging.getLogger(__name__)
@@ -64,6 +66,9 @@ class VirtualGPIO:
         async with self._lock:
             await self._reset_servos()
 
+            if label not in SORT_LABELS:
+                raise ValueError(f"unknown label: {label!r}; expected one of {SORT_LABELS}")
+
             if label == "waste":
                 self._servo_angle[sim_config.SERVO_MOTOR_A_PIN] = float(sim_config.ANGLE_WASTE_A)
                 self._servo_angle[sim_config.SERVO_MOTOR_B_PIN] = float(sim_config.ANGLE_WASTE_B)
@@ -93,8 +98,6 @@ class VirtualGPIO:
                     sim_config.ANGLE_COMPOST_C,
                     hold_sec,
                 )
-            else:
-                raise ValueError(f"unknown label: {label!r}")
 
         # Release lock during hold so other clients can poll get_pin_outputs / read_cm.
         await asyncio.sleep(hold_sec)

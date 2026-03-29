@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -28,15 +27,10 @@ async def lifespan(app: FastAPI):
     await dispose_engine()
 
 
-def _cors_origins() -> list[str]:
-    raw = os.environ.get("CORS_ORIGINS", "http://localhost:5173")
-    return [o.strip() for o in raw.split(",") if o.strip()]
-
-
 app = FastAPI(title="Trash Recycling Social API", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_cors_origins(),
+    allow_origins=get_settings().cors_origin_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

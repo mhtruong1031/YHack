@@ -127,7 +127,7 @@ export async function rejectFriend(token: string, from_sub: string): Promise<voi
 
 export async function postPlinkoAward(
   token: string,
-  body: { drop_id: string; points: number; gemini_value?: number | null }
+  body: { drop_id: string; gemini_value?: number | null }
 ): Promise<{ awarded: boolean; lifetime_points: number }> {
   const r = await apiFetch("/api/plinko/award", {
     method: "POST",

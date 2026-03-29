@@ -3,6 +3,14 @@ Server-side configuration: WebSocket to Pi, CNN, camera, API, proximity tuning.
 """
 
 import os
+import sys
+from pathlib import Path
+
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
+from shared.protocol import SORT_LABELS
 
 # --- WebSocket (Raspberry Pi hardware daemon) ---
 WS_URL = (os.environ.get("WS_URL") or "ws://raspberrypi.local:8765").strip()
@@ -19,7 +27,7 @@ MAX_SORT_RETRIES = 5
 # --- Vision (PyTorch CNN) ---
 CNN_MODEL_WEIGHTS_PATH = ""
 CNN_IMAGE_SIZE = 224
-CNN_CLASS_LABELS = ("waste", "recyclable", "compost")
+CNN_CLASS_LABELS = SORT_LABELS
 CAMERA_DEVICE_INDEX = 0
 
 # --- API ---
