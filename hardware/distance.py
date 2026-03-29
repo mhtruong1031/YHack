@@ -1,33 +1,16 @@
-"""Ultrasonic distance reads using config pin assignments."""
-
-from gpiozero import DistanceSensor
+"""Simulated distance (cm): no ultrasonic hardware; protocol-compatible with the laptop server."""
 
 import config
 
-_sensor: DistanceSensor | None = None
-
 
 def init_sensor() -> None:
-    global _sensor
-    if _sensor is not None:
-        return
-    _sensor = DistanceSensor(
-        trigger=config.ULTRASONIC_TRIG_PIN,
-        echo=config.ULTRASONIC_ECHO_PIN,
-        max_distance=config.ULTRASONIC_MAX_DISTANCE_M,
-    )
+    """No-op (kept for ws_service compatibility)."""
 
 
 def close_sensor() -> None:
-    global _sensor
-    if _sensor is not None:
-        _sensor.close()
-        _sensor = None
+    """No-op."""
 
 
 def read_cm() -> float:
-    """Return distance in centimeters (gpiozero reports meters)."""
-    if _sensor is None:
-        init_sensor()
-    assert _sensor is not None
-    return float(_sensor.distance * 100.0)
+    """Return configured simulated distance in centimeters."""
+    return float(config.SIMULATED_DISTANCE_CM)

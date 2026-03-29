@@ -1,11 +1,6 @@
 """
-Raspberry Pi hardware configuration: GPIO, ultrasonic, servos, WebSocket bind.
+Raspberry Pi hardware configuration: servos, simulated distance, WebSocket bind.
 """
-
-# --- GPIO (BCM) ---
-ULTRASONIC_TRIG_PIN = 23
-ULTRASONIC_ECHO_PIN = 24
-LED1_PIN = 17
 
 # Hobby servos (AngularServo): one signal pin each
 SERVO_MOTOR_A_PIN = 5
@@ -15,12 +10,11 @@ SERVO_MOTOR_C_PIN = 19
 SERVO_MIN_ANGLE = -90
 SERVO_MAX_ANGLE = 90
 
-# HC-SR04 / DistanceSensor max range (meters)
-ULTRASONIC_MAX_DISTANCE_M = 4.0
-
-# --- Calibration ---
-CALIBRATION_DURATION_SEC = 5.0
-CALIBRATION_SAMPLE_INTERVAL_SEC = 0.05
+# --- Simulated distance (no ultrasonic) ---
+# Laptop uses ready.calibrated_avg_cm − PROXIMITY_MARGIN_CM as the “occupied” threshold.
+# If SIMULATED_DISTANCE_CM stays above that value, proximity-based sorts never fire (use camera / lighting on server).
+SIMULATED_DISTANCE_CM = 100.0
+SIMULATED_CALIBRATED_AVG_CM = 100.0
 
 # --- WebSocket server (Pi listens; laptop connects) ---
 WS_HOST = "0.0.0.0"

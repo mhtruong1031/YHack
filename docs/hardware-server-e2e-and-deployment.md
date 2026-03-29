@@ -4,7 +4,7 @@ This document covers automated tests that simulate **Raspberry Pi hardware** + *
 
 ## Architecture
 
-1. **Pi** (`hardware/`): WebSocket **server** on `0.0.0.0:8765` — calibration, ultrasonic distance, `execute_sort` / `get_distance` (see `shared/protocol.py`).
+1. **Pi** (`hardware/`): WebSocket **server** on `0.0.0.0:8765` — **simulated** `get_distance` (configurable cm), `execute_sort`, no ultrasonic (see `shared/protocol.py`).
 2. **Laptop server** (`server/`): WebSocket **client** to `WS_URL`, USB/built-in camera + Gemini classification, optional posts to the API.
 3. **Web backend** (`web/backend/`): FastAPI — device ingest at `POST /internal/drops`, Plinko WebSocket, Auth0, Postgres.
 4. **Web frontend** (`web/frontend/`): React SPA — `VITE_API_BASE_URL` points at the FastAPI app (not at `server/`).
@@ -88,11 +88,11 @@ Default: `ws://0.0.0.0:8765`. Override with `MOCK_PI_HOST` / `MOCK_PI_PORT`. Poi
   pip install -r requirements.txt
   export WS_URL=ws://<pi-ip-or-hostname>:8765
   export GEMINI_API_KEY=...    # real classification; omit for placeholder-only
-  export LIGHTING_TRIGGER=0    # if no camera / headless
-  python main.py
   ```
 
-- **`HARDWARE_SORT_SCRIPTS`**: leave unset or `0` for real split deployment so sorting runs on the Pi via **`execute_sort`**. If set to `1`, the server runs local `hardware/servo_test*.py` scripts and uses the Pi only for distance (single-machine dev).
+- **Camera-only (default):** sorts start when the **laptop camera** sees a sustained lighting change (`LIGHTING_TRIGGER` defaults on). **`PROXIMITY_POLL`** defaults **off** — the server does not use Pi `get_distance` to gate sorts. Set **`PROXIMITY_POLL=1`** if you want Pi distance polling again.
+- **`LIGHTING_TRIGGER=0`:** only if you have no camera *and* you use **`PROXIMITY_POLL=1`**; otherwise nothing will trigger sorts.
+- **`HARDWARE_SORT_SCRIPTS`**: leave unset or `0` for real split deployment so sorting runs on the Pi via **`execute_sort`**. If set to `1`, the server runs local `hardware/servo_test*.py` scripts (single-machine dev).
 
 ### Startup order
 

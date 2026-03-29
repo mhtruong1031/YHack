@@ -1,5 +1,5 @@
 """
-Server-side configuration: WebSocket to Pi, Gemini vision, camera, API, proximity.
+Server-side configuration: WebSocket to Pi, Gemini vision, camera, API.
 """
 
 import os
@@ -16,8 +16,8 @@ _HARDWARE_DIR = _REPO_ROOT / "hardware"
 
 # Map CNN/Gemini labels to Adafruit servo test scripts (see hardware/servo_test*.py).
 # When enabled, the server runs the matching script locally and uses the Pi WebSocket
-# only for distance reads (not gpiozero execute_sort). Set HARDWARE_SORT_SCRIPTS=0 to
-# use the original Pi-only sort path.
+# only for distance reads (not gpiozero execute_sort). Set HARDWARE_SORT_SCRIPTS=0 for
+# normal Pi execute_sort (camera-only trigger by default; see PROXIMITY_POLL).
 HARDWARE_SORT_SCRIPTS_ENABLED = os.environ.get(
     "HARDWARE_SORT_SCRIPTS", "0"
 ).lower() in ("1", "true", "yes")
@@ -30,13 +30,22 @@ SERVO_SCRIPT_BY_LABEL: dict[str, Path] = {
 # --- WebSocket (Raspberry Pi hardware daemon) ---
 WS_URL = (os.environ.get("WS_URL") or "ws://10.66.151.86:8765").strip()
 
-# --- Timing (mirror former hardware/main loop) ---
+# --- Pi distance polling (ultrasonic / simulated distance on Pi) ---
+# Default off: sorts are triggered by the laptop camera only (LIGHTING_TRIGGER).
+# Set PROXIMITY_POLL=1 to also poll get_distance and run when "proximity held".
+PROXIMITY_POLL_ENABLED = os.environ.get("PROXIMITY_POLL", "0").lower() in (
+    "1",
+    "true",
+    "yes",
+)
+
+# --- Timing ---
 MAIN_LOOP_INTERVAL_SEC = 0.05
 PROXIMITY_HOLD_SEC = 0.5
 PROXIMITY_MARGIN_CM = 2.0
 SORT_COOLDOWN_SEC = 2.0
 
-# Repeat execute_sort on Pi while distance still below baseline - margin
+# Repeat execute_sort while Pi distance still below baseline − margin (only if PROXIMITY_POLL)
 MAX_SORT_RETRIES = 5
 
 # --- Vision (Gemini + OpenCV) ---

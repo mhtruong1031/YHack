@@ -1,4 +1,4 @@
-"""Server orchestrator: WebSocket to Pi, proximity gate, Gemini vision, sort retries, API."""
+"""Server orchestrator: WebSocket to Pi, camera (lighting) trigger, Gemini vision, API."""
 
 from __future__ import annotations
 
@@ -95,9 +95,12 @@ async def _run_sort_cycle(
     logger.info("%s; running analysis (Gemini)", reason)
     label, jpeg = await asyncio.to_thread(analysis.analysis_with_frame)
 
-    for attempt in range(config.MAX_SORT_RETRIES):
+    max_attempts = config.MAX_SORT_RETRIES if config.PROXIMITY_POLL_ENABLED else 1
+    for attempt in range(max_attempts):
         if config.HARDWARE_SORT_SCRIPTS_ENABLED:
             await _run_hardware_sort_script(label)
+            if not config.PROXIMITY_POLL_ENABLED:
+                break
             sort_resp = await _rpc(ws, {"type": TYPE_GET_DISTANCE})
             if sort_resp.get("type") == TYPE_ERROR:
                 logger.error(
@@ -126,9 +129,11 @@ async def _run_sort_cycle(
             attempt + 1,
             cm_after,
         )
+        if not config.PROXIMITY_POLL_ENABLED:
+            break
         if not _still_deviated(cm_after, threshold_cm):
             break
-        if attempt + 1 < config.MAX_SORT_RETRIES:
+        if attempt + 1 < max_attempts:
             logger.info(
                 "Still deviated vs threshold %.2f cm; repeating sort",
                 threshold_cm,
@@ -186,11 +191,17 @@ async def run_with_pi(
         raise RuntimeError(f"expected {TYPE_READY}, got {hello!r}")
     baseline = float(hello["calibrated_avg_cm"])
     threshold_cm = _threshold_cm(baseline)
-    logger.info(
-        "Pi ready: baseline %.2f cm, proximity threshold %.2f cm",
-        baseline,
-        threshold_cm,
-    )
+    if config.PROXIMITY_POLL_ENABLED:
+        logger.info(
+            "Pi ready: baseline %.2f cm, proximity poll on (threshold %.2f cm)",
+            baseline,
+            threshold_cm,
+        )
+    else:
+        logger.info(
+            "Pi ready: baseline %.2f cm (ignored); camera-only — lighting trigger, no Pi distance poll",
+            baseline,
+        )
 
     loop = asyncio.get_running_loop()
     below_since: float | None = None
@@ -200,6 +211,11 @@ async def run_with_pi(
     lighting_stop_flag = threading.Event()
 
     lighting_task: asyncio.Task[None] | None = None
+
+    if not config.PROXIMITY_POLL_ENABLED and not config.LIGHTING_TRIGGER_ENABLED:
+        logger.warning(
+            "Both PROXIMITY_POLL and LIGHTING_TRIGGER are off — no automatic sorts will run."
+        )
 
     if config.LIGHTING_TRIGGER_ENABLED:
         threading.Thread(
@@ -219,6 +235,9 @@ async def run_with_pi(
             await asyncio.sleep(config.MAIN_LOOP_INTERVAL_SEC)
             if run_stop_event is not None and run_stop_event.is_set():
                 break
+            if not config.PROXIMITY_POLL_ENABLED:
+                continue
+
             now = loop.time()
             if now < cooldown_until[0]:
                 below_since = None

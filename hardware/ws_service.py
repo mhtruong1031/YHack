@@ -1,4 +1,4 @@
-"""Async WebSocket server: distance reads and execute_sort on the Pi."""
+"""Async WebSocket server: simulated distance reads and execute_sort on the Pi."""
 
 import asyncio
 import json

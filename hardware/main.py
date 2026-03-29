@@ -1,4 +1,4 @@
-"""Raspberry Pi entrypoint: calibrate, then WebSocket server for motors + ultrasonic."""
+"""Raspberry Pi entrypoint: WebSocket server for motors + simulated distance."""
 
 import asyncio
 import logging
@@ -9,7 +9,6 @@ _ROOT = Path(__file__).resolve().parents[1]
 if str(_ROOT) not in sys.path:
     sys.path.append(str(_ROOT))
 
-import calibration
 import config
 import distance
 import motors
@@ -23,12 +22,12 @@ logger = logging.getLogger(__name__)
 
 
 async def main_async() -> None:
+    calibrated_avg_cm = float(config.SIMULATED_CALIBRATED_AVG_CM)
     logger.info(
-        "Starting calibration (%.1f s, LED1 blinks)...",
-        config.CALIBRATION_DURATION_SEC,
+        "Using simulated distance (%.2f cm baseline, read_cm=%.2f cm); starting WebSocket…",
+        calibrated_avg_cm,
+        config.SIMULATED_DISTANCE_CM,
     )
-    calibrated_avg_cm = calibration.run_calibration()
-    logger.info("Calibrated average distance: %.2f cm", calibrated_avg_cm)
     await run_hardware_ws(calibrated_avg_cm)
 
 

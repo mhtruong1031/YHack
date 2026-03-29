@@ -1,6 +1,6 @@
 # Trash Recycling Social
 
-A trash-sorting stack that pairs a **Raspberry Pi** (ultrasonic sensing and servo actuation) with a **laptop** (camera + CNN classification), backed by a **React + FastAPI** web app: Auth0 login, friend graph, friend-scoped leaderboards, and a **Plinko** mini-game fed by real bin drops—Gemini estimates value, the backend pushes over WebSocket, and the client renders balls with Matter.js in a macOS-style UI.
+A trash-sorting stack that pairs a **Raspberry Pi** (servo actuation + **simulated** distance over WebSocket) with a **laptop** (camera + vision classification), backed by a **React + FastAPI** web app: Auth0 login, friend graph, friend-scoped leaderboards, and a **Plinko** mini-game fed by real bin drops—Gemini estimates value, the backend pushes over WebSocket, and the client renders balls with Matter.js in a macOS-style UI.
 
 ## Architecture
 
@@ -9,7 +9,7 @@ The system is four cooperating layers: **physical edge** (Pi), **orchestrator** 
 ```mermaid
 flowchart LR
   subgraph edge [Raspberry Pi]
-    HW[hardware: calibration + GPIO + ws_service]
+    HW[hardware: servos + simulated distance + ws_service]
   end
   subgraph laptop [Laptop server]
     SRV[server/main.py: proximity loop + CNN]
@@ -31,7 +31,7 @@ flowchart LR
   UI <-->|JWT query param| WS
 ```
 
-**Physical sort loop.** The Pi calibrates ultrasonic baseline, then exposes `get_distance` and `execute_sort` messages. The laptop polls distance; when proximity holds long enough it captures a frame, runs `analysis` (PyTorch CNN), sends the label to the Pi, and retries if the chute still reads “occupied.” After a cycle it may notify a generic HTTP endpoint (`API_BASE_URL`) and posts the JPEG to **`POST /internal/drops`** with a shared **device ingest secret** (not Auth0).
+**Physical sort loop.** The Pi exposes `get_distance` (simulated cm in [`hardware/config.py`](hardware/config.py)) and `execute_sort`. The laptop polls distance; when proximity holds long enough it captures a frame, runs `analysis` (Gemini), sends the label to the Pi, and retries if distance still reads “occupied.” After a cycle it may POST the JPEG to **`POST /internal/drops`** with a shared **device ingest secret** (not Auth0).
 
 **Backend responsibilities.** FastAPI mounts routers under `/api/*` for authenticated users (JWT from Auth0 JWKS) and `/internal/*` for trusted devices. On drop ingest the API resizes the image, calls **Gemini** for an estimated USD recyclable value, stores a **`drops`** document, and—only if **exactly one** Plinko WebSocket client is connected across all users—pre-inserts a **`point_ledger`** row for that user and pushes a `type: drop` JSON message (including a data-URL image) to that session. Otherwise it skips the WebSocket push (no duplicate awards when zero or many clients are on Plinko).
 
@@ -43,7 +43,7 @@ flowchart LR
 
 | Path | Role | Details |
 |------|------|---------|
-| [`hardware/`](hardware/) | Pi daemon | Calibration, WebSocket server, GPIO (HC-SR04, servos, LED). See [hardware/README.MD](hardware/README.MD). |
+| [`hardware/`](hardware/) | Pi daemon | WebSocket server, GPIO servos, simulated distance. See [hardware/README.MD](hardware/README.MD). |
 | [`server/`](server/) | Laptop orchestrator | Camera, proximity loop, PyTorch `CnnTrash`, `execute_sort` over WebSocket, optional drop image POST to the API. See [server/README.MD](server/README.MD). |
 | [`web/`](web/) | Full-stack app | Vite + React + TypeScript frontend and FastAPI + PostgreSQL backend. See [web/README.MD](web/README.MD). |
 | [`web/backend/`](web/backend/) | API service | Auth0 JWTs, Gemini drop valuation, Plinko WebSocket, internal ingest. See [web/backend/README.md](web/backend/README.md). |
@@ -53,8 +53,8 @@ flowchart LR
 
 ## How the pieces connect
 
-1. **Pi** ([`hardware/`](hardware/)) calibrates the ultrasonic baseline, then serves WebSocket commands: `get_distance`, `execute_sort` with a label (`waste` / recyclable / compost). It returns `sort_result` with distance so the laptop can retry if the chute is still occupied.
-2. **Laptop** ([`server/`](server/)) connects to the Pi, polls distance, captures a frame when proximity holds, runs the CNN, sends sort commands, and can POST JPEGs to the backend’s internal drop endpoint.
+1. **Pi** ([`hardware/`](hardware/)) serves WebSocket commands: `get_distance` (simulated), `execute_sort` with a label (`waste` / recyclable / compost). It returns `sort_result` with distance so the laptop can retry if still “occupied.”
+2. **Laptop** ([`server/`](server/)) connects to the Pi, polls distance, captures a frame when proximity holds, runs vision (`analysis`), sends sort commands, and can POST JPEGs to the backend’s internal drop endpoint.
 3. **Web** ([`web/`](web/)) stores users, friends, points, and drops; authenticated clients open Plinko and receive **at most one** live `drop` push per ingest when exactly one Plinko session is connected (avoids duplicate awards).
 4. **Simulation** ([`simulation/`](simulation/)) runs a **virtual Pi** on `127.0.0.1:18765` (no GPIO). The laptop server uses the same messages as production; only the harness sends `pin_input` / `get_pin_outputs` (the server must not). See [simulation/README.md](simulation/README.md) for headless CNN, `PYTHONPATH`, and scenario JSON.
 
@@ -74,7 +74,7 @@ To exercise the laptop **server** against a **virtual Pi** (no physical board), 
 
 ## Documentation index
 
-- [Hardware (Pi)](hardware/README.MD) — GPIO, calibration, WebSocket API, run instructions  
+- [Hardware (Pi)](hardware/README.MD) — GPIO servos, simulated distance, WebSocket API, run instructions  
 - [Server (laptop)](server/README.MD) — config, CNN/camera loop, `api_client` / drop upload  
 - [Web app](web/README.MD) — layout, quick start, Auth0 and ingest wiring  
 - [FastAPI backend](web/backend/README.md) — env vars, Postgres tables, Alembic, notable routes and WebSocket behavior  

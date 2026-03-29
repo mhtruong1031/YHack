@@ -36,4 +36,5 @@ def fast_server_config(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr(srv_config, "PROXIMITY_HOLD_SEC", 0.06)
     monkeypatch.setattr(srv_config, "SORT_COOLDOWN_SEC", 0.0)
     monkeypatch.setattr(srv_config, "HARDWARE_SORT_SCRIPTS_ENABLED", False)
+    monkeypatch.setattr(srv_config, "PROXIMITY_POLL_ENABLED", True)
     return srv_config
