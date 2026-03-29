@@ -1,6 +1,6 @@
 # Trash recycling social — FastAPI backend
 
-Async FastAPI service with **PostgreSQL** (SQLAlchemy 2 + **asyncpg**), **Alembic** migrations (Supabase-compatible), Auth0 JWT validation (JWKS via HTTPX + `python-jose`), optional Google Gemini for drop valuation, and Plinko WebSocket push when exactly one user is connected.
+Async FastAPI service with **PostgreSQL** (SQLAlchemy 2 + **psycopg** async), **Alembic** migrations (Supabase-compatible), Auth0 JWT validation (JWKS via HTTPX + `python-jose`), optional Google Gemini for drop valuation, and Plinko WebSocket push when exactly one user is connected.
 
 ## Prerequisites
 
@@ -38,10 +38,16 @@ alembic upgrade head
 
 ## Run
 
+From **`web/backend`** only. If the repo root has its own `.venv` (`YHack/.venv`), activating that one leaves you **without** `uvicorn` / backend deps — use **this folder’s** venv (create it in the setup step above).
+
 ```bash
-source .venv/bin/activate
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+cd web/backend
+source .venv/bin/activate   # must be web/backend/.venv, not the parent repo .venv
+pip install -r requirements.txt   # once, into this venv
+./.venv/bin/python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
+
+Using `./.venv/bin/python` avoids picking up another activated venv or a global `uvicorn` by mistake.
 
 Or:
 
