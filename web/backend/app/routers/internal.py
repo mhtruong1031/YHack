@@ -57,7 +57,12 @@ async def ingest_drop(
     if not raw:
         raise HTTPException(status_code=400, detail="empty image")
     jpeg = _resize_jpeg_max_side(raw)
-    gemini_value = await estimate_recyclable_value_usd(jpeg, settings)
+    gemini_value, gemini_debug = await estimate_recyclable_value_usd(jpeg, settings)
+    logger.info(
+        "ingest_drop gemini_value=%s object_identity=%r",
+        gemini_value,
+        gemini_debug.get("object_identity"),
+    )
     drop_id = str(uuid.uuid4())
     b64 = base64.b64encode(jpeg).decode("ascii")
     session.add(
@@ -114,4 +119,5 @@ async def ingest_drop(
         "drop_id": drop_id,
         "gemini_value": float(gemini_value),
         "classification": classification,
+        "gemini_debug": gemini_debug,
     }
