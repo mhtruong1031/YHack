@@ -3,26 +3,19 @@ import time
 
 kit = ServoKit(channels=16, address=0x40)
 
-# center both
-kit.servo[0].angle = 90
-kit.servo[1].angle = 90
+# Center all
+for ch in [0, 1, 2]:
+    kit.servo[ch].angle = 90
 time.sleep(2)
 
-# servo 0
-kit.servo[0].angle = 80
-time.sleep(1)
-kit.servo[0].angle = 100
-time.sleep(1)
-kit.servo[0].angle = 90
-time.sleep(1)
+# Sweep all one at a time
+for ch in [0, 1, 2]:
+    print(f"Testing servo {ch}")
+    kit.servo[ch].angle = 0
+    time.sleep(2)
+    kit.servo[ch].angle = 180
+    time.sleep(2)
+    kit.servo[ch].angle = 90
+    time.sleep(2)
 
-# servo 1
-kit.servo[1].angle = 80
-time.sleep(1)
-kit.servo[1].angle = 100
-time.sleep(1)
-kit.servo[1].angle = 90
-time.sleep(1)
-
-print("Two-servo test complete")
-
+print("All servos tested")
