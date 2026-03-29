@@ -72,7 +72,7 @@ async def run_hardware_ws(calibrated_avg_cm: float) -> None:
                     )
                     continue
                 try:
-                    motors.execute_sort(label)
+                    await asyncio.to_thread(motors.execute_sort, label)
                     cm = distance.read_cm()
                     await websocket.send(
                         json.dumps({"type": TYPE_SORT_RESULT, "cm": cm})

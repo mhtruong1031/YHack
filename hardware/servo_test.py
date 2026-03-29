@@ -1,8 +1,7 @@
 """
-Optional PCA9685 / Adafruit ServoKit sweep test — not the production gpiozero stack.
+Optional PCA9685 / Adafruit ServoKit sweep test.
 
-Production sorting uses gpiozero AngularServo on BCM pins (see motors.py).
-Run this only when debugging I2C servos at address 0x40.
+Production sorting runs servo_test3/4/5.py via subprocess from motors.py (same as manual runs).
 """
 
 from adafruit_servokit import ServoKit
