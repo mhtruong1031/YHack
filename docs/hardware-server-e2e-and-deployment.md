@@ -121,7 +121,7 @@ For a browser-hosted SPA on another origin, set **`CORS_ORIGINS`** to exact fron
 
 ### Laptop server → backend
 
-- **`DROP_API_URL`**: full URL to ingest, e.g. `http://localhost:8000/internal/drops` (or your deployed API).
+- **`DROP_API_URL`**: if unset, the server defaults to `https://yhack-production.up.railway.app/internal/drops`. Set to a full URL to override, or set **`DROP_API_URL=`** (empty) to disable drop POSTs. Local example: `http://localhost:8000/internal/drops`.
 - **`DROP_API_KEY`** (or the env name in `DROP_API_KEY_ENV`, default `DROP_API_KEY`): must equal **`DEVICE_INGEST_SECRET`** on the backend.
 
 Optional JSON sort notification: set **`API_BASE_URL`** and **`SORT_API_KEY`** (env name `SORT_API_KEY` by default via `API_KEY_ENV`).

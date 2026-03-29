@@ -64,10 +64,15 @@ API_BASE_URL = ""
 API_TIMEOUT_SEC = 10
 API_KEY_ENV = "SORT_API_KEY"
 
-# Drop / ingest: POST captured frame JPEG after a sort cycle. Empty URL skips.
-# DROP_API_KEY_ENV names the env var for the Bearer token (same scheme as backend
-# DEVICE_INGEST_SECRET). Set to "SORT_API_KEY" to reuse the sort API key.
-DROP_API_URL = ""  # e.g. "http://localhost:8000/internal/drops"; empty = skip
+# Drop / ingest: POST captured frame JPEG after a sort cycle.
+# If DROP_API_URL is unset, default is production Railway. Set DROP_API_URL="" to disable.
+# DROP_API_KEY_ENV names the env var for the Bearer token (same as backend DEVICE_INGEST_SECRET).
+_RAILWAY_PUBLIC_API_HOST = "yhack-production.up.railway.app"
+_drop_url_env = os.environ.get("DROP_API_URL")
+if _drop_url_env is None:
+    DROP_API_URL = f"https://{_RAILWAY_PUBLIC_API_HOST}/internal/drops"
+else:
+    DROP_API_URL = _drop_url_env.strip()
 DROP_API_KEY_ENV = "DROP_API_KEY"
 
 

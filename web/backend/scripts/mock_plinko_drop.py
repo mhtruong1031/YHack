@@ -8,11 +8,15 @@ the backend will push a ``drop`` event to that client.
 
 Usage (from web/backend with venv + .env):
 
-  export DEVICE_INGEST_SECRET=...   # or rely on .env loaded below
+  # Local API
+  uvicorn main:app --reload --port 8000
   python scripts/mock_plinko_drop.py
 
-  python scripts/mock_plinko_drop.py --url http://127.0.0.1:8000/internal/drops \\
-      --classification recyclable
+  # Production on Railway (secret must match Railway DEVICE_INGEST_SECRET)
+  python scripts/mock_plinko_drop.py \\
+      --url https://yhack-production.up.railway.app/internal/drops
+
+  # Or set in .env: DROP_URL=https://yhack-production.up.railway.app/internal/drops
 """
 
 from __future__ import annotations
@@ -47,7 +51,7 @@ def main() -> None:
     p.add_argument(
         "--url",
         default=os.environ.get("DROP_URL", "http://127.0.0.1:8000/internal/drops"),
-        help="Full ingest URL (default: env DROP_URL or localhost)",
+        help="Full ingest URL (default: env DROP_URL or http://127.0.0.1:8000/internal/drops)",
     )
     p.add_argument(
         "--secret",
@@ -73,8 +77,22 @@ def main() -> None:
     files = {"image": ("frame.jpg", jpeg, "image/jpeg")}
     data = {"classification": args.classification}
 
-    with httpx.Client(timeout=60.0) as client:
-        r = client.post(args.url, files=files, data=data, headers=headers)
+    try:
+        with httpx.Client(timeout=60.0) as client:
+            r = client.post(args.url, files=files, data=data, headers=headers)
+    except httpx.ConnectError as e:
+        print(
+            "Could not connect to the API (connection refused or unreachable).\n"
+            f"  URL: {args.url}\n"
+            "  Start the backend from web/backend, then retry:\n"
+            "    uvicorn main:app --reload --port 8000\n"
+            "  If the API runs elsewhere, pass --url https://host:port/internal/drops",
+            file=sys.stderr,
+        )
+        raise SystemExit(1) from e
+    except httpx.RequestError as e:
+        print(f"Request failed: {e}", file=sys.stderr)
+        raise SystemExit(1) from e
 
     print(f"HTTP {r.status_code}")
     try:

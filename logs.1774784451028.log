@@ -1,0 +1,259 @@
+2026-03-29T11:38:23.057412468Z [inf]  Starting Container
+2026-03-29T11:38:24.714917745Z [err]  INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
+2026-03-29T11:38:24.714958022Z [err]  INFO:     Started server process [1]
+2026-03-29T11:38:24.714961115Z [err]  INFO:     Waiting for application startup.
+2026-03-29T11:38:24.714964540Z [err]  INFO:     Application startup complete.
+2026-03-29T11:38:29.760048802Z [err]  INFO:httpx:HTTP Request: GET https://dev-23sj8z1a37gpbcvx.us.auth0.com/.well-known/jwks.json "HTTP/1.1 200 OK"
+2026-03-29T11:38:29.760052408Z [err]  INFO:     ('100.64.0.2', 46668) - "WebSocket /ws/plinko?token=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IlV4X1VINmJYN3BSQ3Z3X2VRcEVpYiJ9.eyJpc3MiOiJodHRwczovL2Rldi0yM3NqOHoxYTM3Z3BiY3Z4LnVzLmF1dGgwLmNvbS8iLCJzdWIiOiJnb29nbGUtb2F1dGgyfDEwODg1MTA3MjM0NTUwMTkzNzc5NCIsImF1ZCI6WyJodHRwczovL3loYWNrLWFwaSIsImh0dHBzOi8vZGV2LTIzc2o4ejFhMzdncGJjdngudXMuYXV0aDAuY29tL3VzZXJpbmZvIl0sImlhdCI6MTc3NDc4Mzg4MSwiZXhwIjoxNzc0ODcwMjgxLCJzY29wZSI6Im9wZW5pZCBwcm9maWxlIGVtYWlsIiwiYXpwIjoiR1hFcFVLbFduUmdkdVNJWVRaZjlqOE03Q3NJMFVFTHAifQ.hXfUZyycsByHHNFX5-WHgQ4ndByyW8sgbgEk41PSAF9nhvxTh3DW4PCEmR65RdYAHVlPOUXz2QSFfK_3NB7gQiT_d9HbC8SuA8JOvffJ4_OfSacZDacwJqVjrBMe52FPLJynps2jaeahO1tUDV1bEuABCNHmXbE5JdKiyir1lT7rVQFYQKhUxEEl7LnuGGCWss4aLRzXoML4RH3F1PzxNVV378P54FRBt_Eu6i_MMgFxK5I2oDYBX6q-8WuvnNklhaeKps-1qj7OlPUjQY2bBx7JMB5Is8Jmk0Erx2PsC7bugBL-0JvA5VFXFzn06fuRFRFltvcyeqTEYVZyUQL3EA" [accepted]
+2026-03-29T11:38:29.760055048Z [err]  INFO:     connection open
+2026-03-29T11:39:29.743565907Z [err]  INFO:     connection closed
+2026-03-29T11:39:29.743571058Z [inf]  INFO:     100.64.0.3:59280 - "OPTIONS /api/me HTTP/1.1" 400 Bad Request
+2026-03-29T11:39:29.743574128Z [inf]  INFO:     100.64.0.4:50030 - "OPTIONS /api/friends/pending HTTP/1.1" 400 Bad Request
+2026-03-29T11:39:30.489681431Z [err]  INFO:     ('100.64.0.4', 19216) - "WebSocket /ws/plinko?token=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IlV4X1VINmJYN3BSQ3Z3X2VRcEVpYiJ9.eyJpc3MiOiJodHRwczovL2Rldi0yM3NqOHoxYTM3Z3BiY3Z4LnVzLmF1dGgwLmNvbS8iLCJzdWIiOiJnb29nbGUtb2F1dGgyfDEwODg1MTA3MjM0NTUwMTkzNzc5NCIsImF1ZCI6WyJodHRwczovL3loYWNrLWFwaSIsImh0dHBzOi8vZGV2LTIzc2o4ejFhMzdncGJjdngudXMuYXV0aDAuY29tL3VzZXJpbmZvIl0sImlhdCI6MTc3NDc4NDM2NywiZXhwIjoxNzc0ODcwNzY3LCJzY29wZSI6Im9wZW5pZCBwcm9maWxlIGVtYWlsIiwiYXpwIjoiR1hFcFVLbFduUmdkdVNJWVRaZjlqOE03Q3NJMFVFTHAifQ.FF7AqEg3gRQ2WpjIaU_jZXp81LAk9K6jhms-NOfMOhJQYpoIIXLsKLRlCS89DMljt49N4RmQd_K4Kt8LPvywRRH-3VSz4oeF0Td9sCgKvgSwYOqYvMXHk7dEV_IamkGLsyKjFdBt04aSwOiTc4PBlngyuUkOP3iuxfjjI_sPCM44hlpCgxBzqdJGR4ceRiPZvBsdF9gbzzUgyPzTa6AwPx0Q8N4u6HIGew3sg4tbEaKtw4mng9RC0do7H9yqtSoITu-qWgKFb6EBdlpdPubRtVvV_tUONCxMhHKMAgnWRFep1HWRHmmHtMJlrs9ERxanMpTlwyDeWe9-0HejiS021w" [accepted]
+2026-03-29T11:39:30.489687272Z [err]  INFO:     connection open
+2026-03-29T11:39:50.329533830Z [err]  ERROR:app.services.gemini_service:Gemini request failed: 
+2026-03-29T11:39:50.329537945Z [err]    No API_KEY or ADC found. Please either:
+2026-03-29T11:39:50.329541967Z [err]      - Set the `GOOGLE_API_KEY` environment variable.
+2026-03-29T11:39:50.329562999Z [err]      - Manually pass the key with `genai.configure(api_key=my_api_key)`.
+2026-03-29T11:39:50.329567952Z [err]      - Or set up Application Default Credentials, see https://ai.google.dev/gemini-api/docs/oauth for more information.
+2026-03-29T11:39:50.329571227Z [err]  Traceback (most recent call last):
+2026-03-29T11:39:50.329574324Z [err]    File "/app/app/services/gemini_service.py", line 41, in estimate_recyclable_value_usd
+2026-03-29T11:39:50.329577920Z [err]      response = await asyncio.to_thread(model.generate_content, [_PROMPT, img])
+2026-03-29T11:39:50.329581975Z [err]                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-03-29T11:39:50.329585825Z [err]    File "/mise/installs/python/3.13.12/lib/python3.13/asyncio/threads.py", line 25, in to_thread
+2026-03-29T11:39:50.329589275Z [err]      return await loop.run_in_executor(None, func_call)
+2026-03-29T11:39:50.329593207Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-03-29T11:39:50.329596648Z [err]    File "/mise/installs/python/3.13.12/lib/python3.13/concurrent/futures/thread.py", line 59, in run
+2026-03-29T11:39:50.329599916Z [err]      result = self.fn(*self.args, **self.kwargs)
+2026-03-29T11:39:50.329603640Z [err]    File "/app/.venv/lib/python3.13/site-packages/google/generativeai/generative_models.py", line 317, in generate_content
+2026-03-29T11:39:50.329606725Z [err]      self._client = client.get_default_generative_client()
+2026-03-29T11:39:50.329610331Z [err]                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+2026-03-29T11:39:50.329613797Z [err]    File "/app/.venv/lib/python3.13/site-packages/google/generativeai/client.py", line 358, in get_default_generative_client
+2026-03-29T11:39:50.330369436Z [err]      super().__init__(
+2026-03-29T11:39:50.330372812Z [err]      ~~~~~~~~~~~~~~~~^
+2026-03-29T11:39:50.330380836Z [err]      return _client_manager.get_default_client("generative")
+2026-03-29T11:39:50.330386162Z [err]             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+2026-03-29T11:39:50.330389111Z [err]    File "/app/.venv/lib/python3.13/site-packages/google/generativeai/client.py", line 287, in get_default_client
+2026-03-29T11:39:50.330392319Z [err]      client = self.make_client(name)
+2026-03-29T11:39:50.330395079Z [err]    File "/app/.venv/lib/python3.13/site-packages/google/generativeai/client.py", line 247, in make_client
+2026-03-29T11:39:50.330398875Z [err]      raise e
+2026-03-29T11:39:50.330401786Z [err]    File "/app/.venv/lib/python3.13/site-packages/google/generativeai/client.py", line 239, in make_client
+2026-03-29T11:39:50.330404931Z [err]      client = cls(**self.client_config)
+2026-03-29T11:39:50.330407636Z [err]    File "/app/.venv/lib/python3.13/site-packages/google/ai/generativelanguage_v1beta/services/generative_service/client.py", line 687, in __init__
+2026-03-29T11:39:50.330410471Z [err]      self._transport = transport_init(
+2026-03-29T11:39:50.330413043Z [err]                        ~~~~~~~~~~~~~~^
+2026-03-29T11:39:50.330415618Z [err]          credentials=credentials,
+2026-03-29T11:39:50.330418221Z [err]          ^^^^^^^^^^^^^^^^^^^^^^^^
+2026-03-29T11:39:50.330420965Z [err]      ...<7 lines>...
+2026-03-29T11:39:50.330424526Z [err]          api_audience=self._client_options.api_audience,
+2026-03-29T11:39:50.330427120Z [err]          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-03-29T11:39:50.330429753Z [err]      )
+2026-03-29T11:39:50.330432394Z [err]      ^
+2026-03-29T11:39:50.330435337Z [err]    File "/app/.venv/lib/python3.13/site-packages/google/ai/generativelanguage_v1beta/services/generative_service/transports/grpc.py", line 154, in __init__
+2026-03-29T11:39:50.331313835Z [err]      - Or set up Application Default Credentials, see https://ai.google.dev/gemini-api/docs/oauth for more information.
+2026-03-29T11:39:50.331318102Z [err]          host=host,
+2026-03-29T11:39:50.331323582Z [err]          ^^^^^^^^^^
+2026-03-29T11:39:50.331327356Z [err]      ...<6 lines>...
+2026-03-29T11:39:50.331331892Z [err]  google.auth.exceptions.DefaultCredentialsError: 
+2026-03-29T11:39:50.331333847Z [err]          api_audience=api_audience,
+2026-03-29T11:39:50.331338467Z [err]          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-03-29T11:39:50.331343328Z [err]      )
+2026-03-29T11:39:50.331344672Z [err]    No API_KEY or ADC found. Please either:
+2026-03-29T11:39:50.331346951Z [err]      ^
+2026-03-29T11:39:50.331349752Z [err]    File "/app/.venv/lib/python3.13/site-packages/google/ai/generativelanguage_v1beta/services/generative_service/transports/base.py", line 100, in __init__
+2026-03-29T11:39:50.331357071Z [err]      credentials, _ = google.auth.default(
+2026-03-29T11:39:50.331357622Z [err]      - Set the `GOOGLE_API_KEY` environment variable.
+2026-03-29T11:39:50.331362360Z [err]                       ~~~~~~~~~~~~~~~~~~~^
+2026-03-29T11:39:50.331363991Z [err]      - Manually pass the key with `genai.configure(api_key=my_api_key)`.
+2026-03-29T11:39:50.331369564Z [err]          **scopes_kwargs, quota_project_id=quota_project_id
+2026-03-29T11:39:50.331372492Z [err]          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-03-29T11:39:50.331375441Z [err]      )
+2026-03-29T11:39:50.331378231Z [err]      ^
+2026-03-29T11:39:50.331381009Z [err]    File "/app/.venv/lib/python3.13/site-packages/google/auth/_default.py", line 752, in default
+2026-03-29T11:39:50.331383732Z [err]      raise exceptions.DefaultCredentialsError(_CLOUD_SDK_MISSING_CREDENTIALS)
+2026-03-29T11:39:50.943276332Z [err]      ^
+2026-03-29T11:39:50.943283425Z [err]    File "/app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/default.py", line 952, in do_execute
+2026-03-29T11:39:50.943287337Z [err]      cursor.execute(statement, parameters)
+2026-03-29T11:39:50.943291825Z [inf]  INFO:     100.64.0.5:21194 - "POST /internal/drops HTTP/1.1" 500 Internal Server Error
+2026-03-29T11:39:50.943292685Z [err]      ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+2026-03-29T11:39:50.943296592Z [err]  ERROR:    Exception in ASGI application
+2026-03-29T11:39:50.943298245Z [err]    File "/app/.venv/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/psycopg.py", line 673, in execute
+2026-03-29T11:39:50.943302180Z [err]  Traceback (most recent call last):
+2026-03-29T11:39:50.943304193Z [err]      result = self.await_(self._cursor.execute(query, params, **kw))
+2026-03-29T11:39:50.943307792Z [err]    File "/app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+2026-03-29T11:39:50.943309808Z [err]    File "/app/.venv/lib/python3.13/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 132, in await_only
+2026-03-29T11:39:50.943313176Z [err]      self.dialect.do_execute(
+2026-03-29T11:39:50.943316420Z [err]      return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+2026-03-29T11:39:50.943318044Z [err]      ~~~~~~~~~~~~~~~~~~~~~~~^
+2026-03-29T11:39:50.943321536Z [err]             ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+2026-03-29T11:39:50.943323425Z [err]          cursor, str_statement, effective_parameters, context
+2026-03-29T11:39:50.943326939Z [err]    File "/app/.venv/lib/python3.13/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 196, in greenlet_spawn
+2026-03-29T11:39:50.943328972Z [err]          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-03-29T11:39:50.943332614Z [err]      value = await result
+2026-03-29T11:39:50.943334508Z [err]      )
+2026-03-29T11:39:50.943911412Z [err]      ^
+2026-03-29T11:39:50.943911812Z [err]      result = await app(  # type: ignore[func-returns-value]
+2026-03-29T11:39:50.943917385Z [err]    File "/app/.venv/lib/python3.13/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+2026-03-29T11:39:50.943917569Z [err]               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-03-29T11:39:50.943924547Z [err]          self.scope, self.receive, self.send
+2026-03-29T11:39:50.943925424Z [err]      return await self.app(scope, receive, send)
+2026-03-29T11:39:50.943926518Z [err]              ^^^^^^^^^^^^
+2026-03-29T11:39:50.943930466Z [err]          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-03-29T11:39:50.943932457Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-03-29T11:39:50.943936189Z [err]      )
+2026-03-29T11:39:50.943939385Z [err]    File "/app/.venv/lib/python3.13/site-packages/fastapi/applications.py", line 1054, in __call__
+2026-03-29T11:39:50.943939739Z [err]    File "/app/.venv/lib/python3.13/site-packages/psycopg/cursor_async.py", line 97, in execute
+2026-03-29T11:39:50.943944696Z [err]      await super().__call__(scope, receive, send)
+2026-03-29T11:39:50.943949421Z [err]      raise ex.with_traceback(None)
+2026-03-29T11:39:50.943954186Z [err]  psycopg.errors.UndefinedTable: relation "drops" does not exist
+2026-03-29T11:39:50.943958718Z [err]  LINE 1: INSERT INTO drops (drop_id, gemini_value, classification, im...
+2026-03-29T11:39:50.943965277Z [err]                      ^
+2026-03-29T11:39:50.943970416Z [err]  
+2026-03-29T11:39:50.943976937Z [err]  The above exception was the direct cause of the following exception:
+2026-03-29T11:39:50.943981500Z [err]  
+2026-03-29T11:39:50.943985883Z [err]  Traceback (most recent call last):
+2026-03-29T11:39:50.943990470Z [err]    File "/app/.venv/lib/python3.13/site-packages/uvicorn/protocols/http/httptools_impl.py", line 409, in run_asgi
+2026-03-29T11:39:50.945254574Z [err]    File "/app/.venv/lib/python3.13/site-packages/starlette/applications.py", line 113, in __call__
+2026-03-29T11:39:50.945259447Z [err]      await self.middleware_stack(scope, receive, send)
+2026-03-29T11:39:50.945264951Z [err]    File "/app/.venv/lib/python3.13/site-packages/starlette/middleware/errors.py", line 187, in __call__
+2026-03-29T11:39:50.945265049Z [err]    File "/app/.venv/lib/python3.13/site-packages/starlette/routing.py", line 735, in app
+2026-03-29T11:39:50.945271823Z [err]    File "/app/.venv/lib/python3.13/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+2026-03-29T11:39:50.945271972Z [err]      raise exc
+2026-03-29T11:39:50.945274739Z [err]      await route.handle(scope, receive, send)
+2026-03-29T11:39:50.945278422Z [err]      await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+2026-03-29T11:39:50.945278729Z [err]    File "/app/.venv/lib/python3.13/site-packages/starlette/middleware/errors.py", line 165, in __call__
+2026-03-29T11:39:50.945284680Z [err]      await self.app(scope, receive, _send)
+2026-03-29T11:39:50.945286049Z [err]    File "/app/.venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+2026-03-29T11:39:50.945289823Z [err]    File "/app/.venv/lib/python3.13/site-packages/starlette/middleware/cors.py", line 85, in __call__
+2026-03-29T11:39:50.945291563Z [err]      raise exc
+2026-03-29T11:39:50.945296878Z [err]      await self.app(scope, receive, send)
+2026-03-29T11:39:50.945297034Z [err]    File "/app/.venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+2026-03-29T11:39:50.945302384Z [err]      await app(scope, receive, sender)
+2026-03-29T11:39:50.945305771Z [err]    File "/app/.venv/lib/python3.13/site-packages/starlette/routing.py", line 715, in __call__
+2026-03-29T11:39:50.945308961Z [err]      await self.middleware_stack(scope, receive, send)
+2026-03-29T11:39:50.946277313Z [err]    File "/app/.venv/lib/python3.13/site-packages/starlette/routing.py", line 288, in handle
+2026-03-29T11:39:50.946284246Z [err]      await self.app(scope, receive, send)
+2026-03-29T11:39:50.946288768Z [err]    File "/app/.venv/lib/python3.13/site-packages/starlette/routing.py", line 76, in app
+2026-03-29T11:39:50.946293450Z [err]      await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+2026-03-29T11:39:50.946297581Z [err]    File "/app/.venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+2026-03-29T11:39:50.946301463Z [err]      raise exc
+2026-03-29T11:39:50.946305299Z [err]    File "/app/.venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+2026-03-29T11:39:50.946309075Z [err]      await app(scope, receive, sender)
+2026-03-29T11:39:50.946312537Z [err]    File "/app/.venv/lib/python3.13/site-packages/starlette/routing.py", line 73, in app
+2026-03-29T11:39:50.946315785Z [err]      response = await f(request)
+2026-03-29T11:39:50.946323610Z [err]                 ^^^^^^^^^^^^^^^^
+2026-03-29T11:39:50.946328373Z [err]    File "/app/.venv/lib/python3.13/site-packages/fastapi/routing.py", line 301, in app
+2026-03-29T11:39:50.946331963Z [err]      raw_response = await run_endpoint_function(
+2026-03-29T11:39:50.946335309Z [err]                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-03-29T11:39:50.946338910Z [err]      ...<3 lines>...
+2026-03-29T11:39:50.946342321Z [err]      )
+2026-03-29T11:39:50.946346122Z [err]      ^
+2026-03-29T11:39:50.946349367Z [err]    File "/app/.venv/lib/python3.13/site-packages/fastapi/routing.py", line 212, in run_endpoint_function
+2026-03-29T11:39:50.946353025Z [err]      return await dependant.call(**values)
+2026-03-29T11:39:50.946356367Z [err]             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-03-29T11:39:50.946359737Z [err]    File "/app/app/routers/internal.py", line 72, in ingest_drop
+2026-03-29T11:39:50.947127403Z [err]      await session.flush()
+2026-03-29T11:39:50.947128020Z [err]      ~~~~~~~~~~~~~~~~~~~~~^^
+2026-03-29T11:39:50.947132843Z [err]    File "/app/.venv/lib/python3.13/site-packages/sqlalchemy/ext/asyncio/session.py", line 787, in flush
+2026-03-29T11:39:50.947133804Z [err]    File "/app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/unitofwork.py", line 466, in execute
+2026-03-29T11:39:50.947137715Z [err]      await greenlet_spawn(self.sync_session.flush, objects=objects)
+2026-03-29T11:39:50.947139251Z [err]      rec.execute(self)
+2026-03-29T11:39:50.947143590Z [err]    File "/app/.venv/lib/python3.13/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 203, in greenlet_spawn
+2026-03-29T11:39:50.947145290Z [err]      ~~~~~~~~~~~^^^^^^
+2026-03-29T11:39:50.947148892Z [err]      result = context.switch(value)
+2026-03-29T11:39:50.947152036Z [err]    File "/app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/unitofwork.py", line 642, in execute
+2026-03-29T11:39:50.947153863Z [err]    File "/app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 4331, in flush
+2026-03-29T11:39:50.947156991Z [err]      self._flush(objects)
+2026-03-29T11:39:50.947159736Z [err]      ~~~~~~~~~~~^^^^^^^^^
+2026-03-29T11:39:50.947162646Z [err]    File "/app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 4466, in _flush
+2026-03-29T11:39:50.947165566Z [err]      with util.safe_reraise():
+2026-03-29T11:39:50.947168429Z [err]           ~~~~~~~~~~~~~~~~~^^
+2026-03-29T11:39:50.947171572Z [err]    File "/app/.venv/lib/python3.13/site-packages/sqlalchemy/util/langhelpers.py", line 121, in __exit__
+2026-03-29T11:39:50.947174451Z [err]      raise exc_value.with_traceback(exc_tb)
+2026-03-29T11:39:50.947177184Z [err]    File "/app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py", line 4427, in _flush
+2026-03-29T11:39:50.947180250Z [err]      flush_context.execute()
+2026-03-29T11:39:50.947945373Z [err]          statement, multiparams, execution_options=execution_options
+2026-03-29T11:39:50.947951538Z [err]      )
+2026-03-29T11:39:50.947956056Z [err]      util.preloaded.orm_persistence.save_obj(
+2026-03-29T11:39:50.947957104Z [err]    File "/app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+2026-03-29T11:39:50.947962324Z [err]      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+2026-03-29T11:39:50.947965272Z [err]      return meth(
+2026-03-29T11:39:50.947967424Z [err]          self.mapper,
+2026-03-29T11:39:50.947970704Z [err]          ^^^^^^^^^^^^
+2026-03-29T11:39:50.947973729Z [err]          uow.states_for_mapper_hierarchy(self.mapper, False, False),
+2026-03-29T11:39:50.947977298Z [err]          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-03-29T11:39:50.947980115Z [err]          uow,
+2026-03-29T11:39:50.947982787Z [err]          ^^^^
+2026-03-29T11:39:50.947985467Z [err]      )
+2026-03-29T11:39:50.947988185Z [err]      ^
+2026-03-29T11:39:50.947990921Z [err]    File "/app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/persistence.py", line 93, in save_obj
+2026-03-29T11:39:50.947993712Z [err]      _emit_insert_statements(
+2026-03-29T11:39:50.947996428Z [err]      ~~~~~~~~~~~~~~~~~~~~~~~^
+2026-03-29T11:39:50.947999060Z [err]          base_mapper,
+2026-03-29T11:39:50.948001802Z [err]          ^^^^^^^^^^^^
+2026-03-29T11:39:50.948004704Z [err]      ...<3 lines>...
+2026-03-29T11:39:50.948007426Z [err]          insert,
+2026-03-29T11:39:50.948010398Z [err]          ^^^^^^^
+2026-03-29T11:39:50.948013322Z [err]      )
+2026-03-29T11:39:50.948016551Z [err]      ^
+2026-03-29T11:39:50.948019375Z [err]    File "/app/.venv/lib/python3.13/site-packages/sqlalchemy/orm/persistence.py", line 1048, in _emit_insert_statements
+2026-03-29T11:39:50.948022488Z [err]      result = connection.execute(
+2026-03-29T11:39:50.948826607Z [err]          self,
+2026-03-29T11:39:50.948832574Z [err]          distilled_parameters,
+2026-03-29T11:39:50.948836374Z [err]          execution_options or NO_OPTIONS,
+2026-03-29T11:39:50.948840182Z [err]      )
+2026-03-29T11:39:50.948843726Z [err]    File "/app/.venv/lib/python3.13/site-packages/sqlalchemy/sql/elements.py", line 527, in _execute_on_connection
+2026-03-29T11:39:50.948847485Z [err]      return connection._execute_clauseelement(
+2026-03-29T11:39:50.948851013Z [err]             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+2026-03-29T11:39:50.948855392Z [err]          self, distilled_params, execution_options
+2026-03-29T11:39:50.948859148Z [err]          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-03-29T11:39:50.948863164Z [err]      )
+2026-03-29T11:39:50.948866714Z [err]      ^
+2026-03-29T11:39:50.948870302Z [err]    File "/app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+2026-03-29T11:39:50.948873994Z [err]      ret = self._execute_context(
+2026-03-29T11:39:50.948877357Z [err]          dialect,
+2026-03-29T11:39:50.948880667Z [err]      ...<8 lines>...
+2026-03-29T11:39:50.948884015Z [err]          cache_hit=cache_hit,
+2026-03-29T11:39:50.948887145Z [err]      )
+2026-03-29T11:39:50.948890704Z [err]    File "/app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+2026-03-29T11:39:50.948893716Z [err]      return self._exec_single_context(
+2026-03-29T11:39:50.948896492Z [err]             ~~~~~~~~~~~~~~~~~~~~~~~~~^
+2026-03-29T11:39:50.948899756Z [err]          dialect, context, statement, parameters
+2026-03-29T11:39:50.948903332Z [err]          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-03-29T11:39:50.948906531Z [err]      )
+2026-03-29T11:39:50.948909868Z [err]      ^
+2026-03-29T11:39:50.948912971Z [err]    File "/app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+2026-03-29T11:39:50.949653356Z [err]      self._handle_dbapi_exception(
+2026-03-29T11:39:50.949658340Z [err]      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+2026-03-29T11:39:50.949662338Z [err]          e, str_statement, effective_parameters, cursor, context
+2026-03-29T11:39:50.949666031Z [err]          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-03-29T11:39:50.949669540Z [err]      )
+2026-03-29T11:39:50.949673941Z [err]      ^
+2026-03-29T11:39:50.949678057Z [err]    File "/app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 2363, in _handle_dbapi_exception
+2026-03-29T11:39:50.949682343Z [err]      raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+2026-03-29T11:39:50.949686159Z [err]    File "/app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+2026-03-29T11:39:50.949689499Z [err]      self.dialect.do_execute(
+2026-03-29T11:39:50.949692870Z [err]      ~~~~~~~~~~~~~~~~~~~~~~~^
+2026-03-29T11:39:50.949696660Z [err]          cursor, str_statement, effective_parameters, context
+2026-03-29T11:39:50.949700035Z [err]          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-03-29T11:39:50.949703492Z [err]      )
+2026-03-29T11:39:50.949706775Z [err]      ^
+2026-03-29T11:39:50.949709886Z [err]    File "/app/.venv/lib/python3.13/site-packages/sqlalchemy/engine/default.py", line 952, in do_execute
+2026-03-29T11:39:50.949713281Z [err]      cursor.execute(statement, parameters)
+2026-03-29T11:39:50.949717154Z [err]      ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+2026-03-29T11:39:50.949720430Z [err]    File "/app/.venv/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/psycopg.py", line 673, in execute
+2026-03-29T11:39:50.949723569Z [err]      result = self.await_(self._cursor.execute(query, params, **kw))
+2026-03-29T11:39:50.949726962Z [err]    File "/app/.venv/lib/python3.13/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 132, in await_only
+2026-03-29T11:39:50.950763960Z [err]      return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+2026-03-29T11:39:50.950770044Z [err]             ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+2026-03-29T11:39:50.950774297Z [err]    File "/app/.venv/lib/python3.13/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 196, in greenlet_spawn
+2026-03-29T11:39:50.950778473Z [err]      value = await result
+2026-03-29T11:39:50.950785498Z [err]              ^^^^^^^^^^^^
+2026-03-29T11:39:50.950789429Z [err]    File "/app/.venv/lib/python3.13/site-packages/psycopg/cursor_async.py", line 97, in execute
+2026-03-29T11:39:50.950794277Z [err]      raise ex.with_traceback(None)
+2026-03-29T11:39:50.950798362Z [err]  sqlalchemy.exc.ProgrammingError: (psycopg.errors.UndefinedTable) relation "drops" does not exist
+2026-03-29T11:39:50.950801946Z [err]  LINE 1: INSERT INTO drops (drop_id, gemini_value, classification, im...
+2026-03-29T11:39:50.950805195Z [err]                      ^
+2026-03-29T11:39:50.950808837Z [err]  [SQL: INSERT INTO drops (drop_id, gemini_value, classification, image_base64, created_at) VALUES (%(drop_id)s::VARCHAR, %(gemini_value)s, %(classification)s::VARCHAR, %(image_base64)s::VARCHAR, %(created_at)s::TIMESTAMP WITH TIME ZONE)]
+2026-03-29T11:39:50.950812801Z [err]  [parameters: {'drop_id': '99b7fe9d-8e0b-4929-a884-282720b05248', 'gemini_value': 0.0, 'classification': 'recyclable', 'image_base64': '/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBAUEBAYFBQUGBgYHCQ4JCQgICRINDQoOFRIWFhUSFBQXGiEcFxgfGRQUHScdHyIjJSUlFhwpLCgkKyEkJST/2wBDAQYGBgkICREJCREkGBQYJCQkJ ... (118 characters truncated) ... /xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCEAlp4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//2Q==', 'created_at': datetime.datetime(2026, 3, 29, 11, 39, 50, 304852, tzinfo=datetime.timezone.utc)}]
+2026-03-29T11:39:50.950816447Z [err]  (Background on this error at: https://sqlalche.me/e/20/f405)

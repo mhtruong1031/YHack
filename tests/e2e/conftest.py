@@ -18,8 +18,11 @@ if str(_SERVER_DIR) not in sys.path:
 
 @pytest.fixture(autouse=True)
 def _e2e_env(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Headless analysis path; no Gemini key in E2E."""
+    """Headless analysis path; no Gemini key in E2E; no real Railway drop POSTs."""
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    import config as srv_config
+
+    monkeypatch.setattr(srv_config, "DROP_API_URL", "")
 
 
 @pytest.fixture
