@@ -32,6 +32,45 @@ function dataUrlFromBase64(image_base64: string): string {
   return `data:image/png;base64,${trimmed}`;
 }
 
+/** Square texture size for Matter sprite (higher = sharper on retina). */
+const BALL_TEXTURE_PX = 128;
+
+/**
+ * Clip image to a circle so the Plinko ball looks round (Matter draws sprites as rects).
+ */
+function circularTextureDataUrl(img: HTMLImageElement): string {
+  const size = BALL_TEXTURE_PX;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return img.src;
+
+  const cx = size / 2;
+  const cy = size / 2;
+  const radius = size / 2 - 1;
+
+  ctx.clearRect(0, 0, size, size);
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  ctx.closePath();
+  ctx.clip();
+  const cover = Math.max(size / img.width, size / img.height);
+  const dw = img.width * cover;
+  const dh = img.height * cover;
+  ctx.drawImage(img, cx - dw / 2, cy - dh / 2, dw, dh);
+  ctx.restore();
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgba(255,255,255,0.4)";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  return canvas.toDataURL("image/png");
+}
+
 export function Plinko() {
   const { getAccessTokenSilently } = useAuth0();
   const audience = import.meta.env.VITE_AUTH0_AUDIENCE;
@@ -355,7 +394,7 @@ export function Plinko() {
             awardedRef.current = false;
             stableFramesRef.current = 0;
 
-            const texture = dataUrlFromBase64(msg.image_base64);
+            const srcDataUrl = dataUrlFromBase64(msg.image_base64);
             const img = new Image();
             img.onload = () => {
               const mm = matterRef.current;
@@ -367,7 +406,8 @@ export function Plinko() {
               prev.forEach((b: Matter.Body) => Matter.World.remove(world, b));
 
               const r = 16;
-              const scale = (r * 2) / Math.max(img.width, img.height);
+              const circularTexture = circularTextureDataUrl(img);
+              const scale = (r * 2) / BALL_TEXTURE_PX;
               const ball = Matter.Bodies.circle(width / 2, 48, r, {
                 label: "ball",
                 restitution: 0.35,
@@ -376,7 +416,7 @@ export function Plinko() {
                 density: 0.002,
                 render: {
                   sprite: {
-                    texture,
+                    texture: circularTexture,
                     xScale: scale,
                     yScale: scale,
                   },
@@ -389,7 +429,7 @@ export function Plinko() {
             img.onerror = () => {
               setLastEvent("Failed to load drop image");
             };
-            img.src = texture;
+            img.src = srcDataUrl;
           };
         } catch {
           if (cancelled) return;
