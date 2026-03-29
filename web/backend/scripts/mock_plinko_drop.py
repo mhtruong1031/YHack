@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """
-POST a synthetic JPEG to POST /internal/drops (device ingest).
+POST a JPEG to POST /internal/drops (device ingest).
+
+By default uses the repo-root ``test.jpg`` if it exists (e.g. YHack/test.jpg);
+otherwise builds a tiny synthetic JPEG. Override with ``--image PATH``.
 
 This matches what the laptop server sends via server/api_client.notify_drop_image.
 If the FastAPI app is running and exactly one Plinko WebSocket client is connected,
@@ -11,6 +14,8 @@ Usage (from web/backend with venv + .env):
   # Local API
   uvicorn main:app --reload --port 8000
   python scripts/mock_plinko_drop.py
+
+  python scripts/mock_plinko_drop.py --image /path/to/photo.jpg
 
   # Production on Railway (secret must match Railway DEVICE_INGEST_SECRET)
   python scripts/mock_plinko_drop.py \\
@@ -27,7 +32,11 @@ import sys
 from io import BytesIO
 from pathlib import Path
 
-_BACKEND_ROOT = Path(__file__).resolve().parents[1]
+_SCRIPT = Path(__file__).resolve()
+_BACKEND_ROOT = _SCRIPT.parents[1]
+# web/backend/scripts -> parents[2]=web, parents[3]=repo root (YHack)
+_REPO_ROOT = _SCRIPT.parents[3]
+_DEFAULT_REPO_TEST_JPEG = _REPO_ROOT / "test.jpg"
 
 try:
     import httpx
@@ -63,6 +72,14 @@ def main() -> None:
         default="recyclable",
         help="Optional classification form field (default: recyclable)",
     )
+    p.add_argument(
+        "--image",
+        type=Path,
+        default=None,
+        help=(
+            "JPEG file to upload (default: <repo>/test.jpg if present, else synthetic)"
+        ),
+    )
     args = p.parse_args()
 
     if not args.secret.strip():
@@ -72,9 +89,24 @@ def main() -> None:
         )
         raise SystemExit(2)
 
-    jpeg = _tiny_jpeg()
+    upload_name = "frame.jpg"
+    if args.image is not None:
+        path = args.image.expanduser().resolve()
+        if not path.is_file():
+            print(f"Image not found: {path}", file=sys.stderr)
+            raise SystemExit(2)
+        jpeg = path.read_bytes()
+        upload_name = path.name
+    elif _DEFAULT_REPO_TEST_JPEG.is_file():
+        jpeg = _DEFAULT_REPO_TEST_JPEG.read_bytes()
+        upload_name = _DEFAULT_REPO_TEST_JPEG.name
+        print(f"Using {_DEFAULT_REPO_TEST_JPEG}", file=sys.stderr)
+    else:
+        jpeg = _tiny_jpeg()
+        print("No test.jpg at repo root; using tiny synthetic JPEG", file=sys.stderr)
+
     headers = {"Authorization": f"Bearer {args.secret.strip()}"}
-    files = {"image": ("frame.jpg", jpeg, "image/jpeg")}
+    files = {"image": (upload_name, jpeg, "image/jpeg")}
     data = {"classification": args.classification}
 
     try:

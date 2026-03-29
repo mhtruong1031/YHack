@@ -69,7 +69,7 @@ python main.py
 | `GEMINI_API_KEY` | yes | Google AI Studio / Gemini key |
 | `DEVICE_INGEST_SECRET` | yes | Shared secret for `Authorization: Bearer <secret>` on `/internal/drops` |
 | `CORS_ORIGINS` | no | Comma-separated origins; default `http://localhost:5173` |
-| `GEMINI_MODEL` | no | Model id; default `gemini-1.5-flash` |
+| `GEMINI_MODEL` | no | Model id; default `gemini-2.5-flash` (`gemini-1.5-flash` is no longer available on the current API) |
 
 `main.py` calls `load_dotenv()` so a local `.env` is picked up for both Pydantic settings and CORS.
 

@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -13,6 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.auth import decode_auth0_token_ws
 from app.config import get_settings
+from app.cors_preflight_log import CorsPreflightLogMiddleware
 from app.db import dispose_engine
 from app.routers import friends, health, internal, leaderboard, me, plinko, users_search
 from app.services.plinko_manager import plinko_manager
@@ -28,13 +30,27 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Trash Recycling Social API", lifespan=lifespan)
+_settings = get_settings()
+logger.info(
+    "CORS allow_origins=%s allow_origin_regex=%s",
+    _settings.cors_origin_list,
+    _settings.cors_origin_regex_pattern,
+)
+if os.environ.get("RAILWAY_ENVIRONMENT") and _settings.cors_origin_list == ["http://localhost:5173"]:
+    logger.warning(
+        "Railway: CORS_ORIGINS is still the default localhost-only list. "
+        "Browsers on Vercel get HTTP 400 on OPTIONS. Set CORS_ORIGINS=https://<your-vercel-host> "
+        "(comma-separated). Logs line above shows allow_origins; preflight logs show the browser origin."
+    )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=get_settings().cors_origin_list,
+    allow_origins=_settings.cors_origin_list,
+    allow_origin_regex=_settings.cors_origin_regex_pattern,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(CorsPreflightLogMiddleware)
 
 app.include_router(health.router)
 app.include_router(me.router)
