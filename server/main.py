@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import subprocess
 import sys
 import threading
 from pathlib import Path
@@ -52,6 +53,40 @@ def _still_deviated(cm: float, threshold_cm: float) -> bool:
     return cm < threshold_cm
 
 
+def _run_hardware_sort_script_sync(label: str) -> None:
+    """Run hardware/servo_test{3,4,5}.py for recyclable / waste / compost."""
+    script = config.SERVO_SCRIPT_BY_LABEL.get(label)
+    if script is None:
+        logger.warning("no hardware servo script mapped for label %r", label)
+        return
+    if not script.is_file():
+        logger.error("hardware sort script not found: %s", script)
+        return
+    proc = subprocess.run(
+        [sys.executable, str(script)],
+        cwd=str(script.parent),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if proc.returncode != 0:
+        tail = (proc.stderr or proc.stdout or "").strip()
+        if len(tail) > 500:
+            tail = tail[:500] + "..."
+        logger.error(
+            "hardware script %s exited %s: %s",
+            script.name,
+            proc.returncode,
+            tail or "(no output)",
+        )
+    else:
+        logger.info("hardware script finished: %s", script.name)
+
+
+async def _run_hardware_sort_script(label: str) -> None:
+    await asyncio.to_thread(_run_hardware_sort_script_sync, label)
+
+
 async def _run_sort_cycle(
     ws: websockets.WebSocketClientProtocol,
     threshold_cm: float,
@@ -61,17 +96,31 @@ async def _run_sort_cycle(
     label, jpeg = await asyncio.to_thread(analysis.analysis_with_frame)
 
     for attempt in range(config.MAX_SORT_RETRIES):
-        sort_resp = await _rpc(
-            ws,
-            {"type": TYPE_EXECUTE_SORT, "label": label},
-        )
-        if sort_resp.get("type") == TYPE_ERROR:
-            logger.error("execute_sort error: %s", sort_resp.get("message"))
-            break
-        if sort_resp.get("type") != TYPE_SORT_RESULT:
-            logger.error("unexpected sort response: %s", sort_resp)
-            break
-        cm_after = float(sort_resp["cm"])
+        if config.HARDWARE_SORT_SCRIPTS_ENABLED:
+            await _run_hardware_sort_script(label)
+            sort_resp = await _rpc(ws, {"type": TYPE_GET_DISTANCE})
+            if sort_resp.get("type") == TYPE_ERROR:
+                logger.error(
+                    "get_distance after hardware script: %s",
+                    sort_resp.get("message"),
+                )
+                break
+            if sort_resp.get("type") != TYPE_DISTANCE:
+                logger.error("unexpected distance response: %s", sort_resp)
+                break
+            cm_after = float(sort_resp["cm"])
+        else:
+            sort_resp = await _rpc(
+                ws,
+                {"type": TYPE_EXECUTE_SORT, "label": label},
+            )
+            if sort_resp.get("type") == TYPE_ERROR:
+                logger.error("execute_sort error: %s", sort_resp.get("message"))
+                break
+            if sort_resp.get("type") != TYPE_SORT_RESULT:
+                logger.error("unexpected sort response: %s", sort_resp)
+                break
+            cm_after = float(sort_resp["cm"])
         logger.info(
             "sort_result attempt %s: distance %.2f cm",
             attempt + 1,
@@ -125,7 +174,10 @@ async def _lighting_consumer(
         )
 
 
-async def run_with_pi(ws: websockets.WebSocketClientProtocol) -> None:
+async def run_with_pi(
+    ws: websockets.WebSocketClientProtocol,
+    run_stop_event: asyncio.Event | None = None,
+) -> None:
     raw = await ws.recv()
     if isinstance(raw, bytes):
         raw = raw.decode("utf-8")
@@ -145,14 +197,14 @@ async def run_with_pi(ws: websockets.WebSocketClientProtocol) -> None:
     cooldown_until: list[float] = [0.0]
     sort_lock = asyncio.Lock()
     trigger_queue: asyncio.Queue[str] = asyncio.Queue()
-    stop_event = threading.Event()
+    lighting_stop_flag = threading.Event()
 
     lighting_task: asyncio.Task[None] | None = None
 
     if config.LIGHTING_TRIGGER_ENABLED:
         threading.Thread(
             target=analysis.lighting_monitor_loop,
-            args=(stop_event, loop, trigger_queue),
+            args=(lighting_stop_flag, loop, trigger_queue),
             name="lighting-monitor",
             daemon=True,
         ).start()
@@ -165,6 +217,8 @@ async def run_with_pi(ws: websockets.WebSocketClientProtocol) -> None:
     try:
         while True:
             await asyncio.sleep(config.MAIN_LOOP_INTERVAL_SEC)
+            if run_stop_event is not None and run_stop_event.is_set():
+                break
             now = loop.time()
             if now < cooldown_until[0]:
                 below_since = None
@@ -198,7 +252,7 @@ async def run_with_pi(ws: websockets.WebSocketClientProtocol) -> None:
             else:
                 below_since = None
     finally:
-        stop_event.set()
+        lighting_stop_flag.set()
         if lighting_task is not None:
             lighting_task.cancel()
             try:

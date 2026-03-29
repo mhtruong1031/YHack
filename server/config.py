@@ -12,6 +12,21 @@ if str(_REPO_ROOT) not in sys.path:
 
 from shared.protocol import SORT_LABELS
 
+_HARDWARE_DIR = _REPO_ROOT / "hardware"
+
+# Map CNN/Gemini labels to Adafruit servo test scripts (see hardware/servo_test*.py).
+# When enabled, the server runs the matching script locally and uses the Pi WebSocket
+# only for distance reads (not gpiozero execute_sort). Set HARDWARE_SORT_SCRIPTS=0 to
+# use the original Pi-only sort path.
+HARDWARE_SORT_SCRIPTS_ENABLED = os.environ.get(
+    "HARDWARE_SORT_SCRIPTS", "0"
+).lower() in ("1", "true", "yes")
+SERVO_SCRIPT_BY_LABEL: dict[str, Path] = {
+    "recyclable": _HARDWARE_DIR / "servo_test3.py",
+    "waste": _HARDWARE_DIR / "servo_test4.py",
+    "compost": _HARDWARE_DIR / "servo_test5.py",
+}
+
 # --- WebSocket (Raspberry Pi hardware daemon) ---
 WS_URL = (os.environ.get("WS_URL") or "ws://10.66.151.86:8765").strip()
 

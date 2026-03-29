@@ -1,3 +1,6 @@
+.venv-e2e/
+.pytest_cache/
+
 web/backend/.env
 web/frontend/.env
 web/frontend/dist

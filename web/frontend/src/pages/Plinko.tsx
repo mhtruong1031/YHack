@@ -1,5 +1,5 @@
 import { useAuth0 } from "@auth0/auth0-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import Matter from "matter-js";
 import { AppLayout } from "../components/AppLayout";
@@ -35,7 +35,10 @@ function dataUrlFromBase64(image_base64: string): string {
 export function Plinko() {
   const { getAccessTokenSilently } = useAuth0();
   const audience = import.meta.env.VITE_AUTH0_AUDIENCE;
-  const tokenOpts = audience ? { authorizationParams: { audience } } : undefined;
+  const tokenOpts = useMemo(
+    () => (audience ? { authorizationParams: { audience } } : undefined),
+    [audience]
+  );
 
   const panelRef = useRef<HTMLDivElement>(null);
   const canvasHostRef = useRef<HTMLDivElement>(null);
@@ -166,9 +169,13 @@ export function Plinko() {
 
     const wallThick = 24;
     const height = 480;
+    const maxCanvasWidth = 960;
+    const resizeDebounceMs = 120;
 
     const setup = () => {
-      const width = Math.max(320, host.clientWidth || panelRef.current?.clientWidth || 640);
+      const raw =
+        host.clientWidth || panelRef.current?.clientWidth || 640;
+      const width = Math.max(320, Math.min(raw, maxCanvasWidth));
       if (matterRef.current) {
         const prev = matterRef.current;
         Matter.Events.off(prev.engine, "afterUpdate");
@@ -192,7 +199,10 @@ export function Plinko() {
           height,
           wireframes: false,
           background: "transparent",
-          pixelRatio: typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1,
+          pixelRatio:
+            typeof window !== "undefined"
+              ? Math.min(2, window.devicePixelRatio || 1)
+              : 1,
         },
       });
 
@@ -247,12 +257,21 @@ export function Plinko() {
     };
 
     setup();
+    let resizeDebounce: ReturnType<typeof setTimeout> | undefined;
+    const scheduleSetup = () => {
+      if (resizeDebounce !== undefined) clearTimeout(resizeDebounce);
+      resizeDebounce = window.setTimeout(() => {
+        resizeDebounce = undefined;
+        setup();
+      }, resizeDebounceMs);
+    };
     const ro = new ResizeObserver(() => {
-      setup();
+      scheduleSetup();
     });
     ro.observe(host);
 
     return () => {
+      if (resizeDebounce !== undefined) clearTimeout(resizeDebounce);
       ro.disconnect();
       const m = matterRef.current;
       if (m) {
