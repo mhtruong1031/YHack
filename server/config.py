@@ -13,7 +13,7 @@ if str(_REPO_ROOT) not in sys.path:
 from shared.protocol import SORT_LABELS
 
 # --- WebSocket (Raspberry Pi hardware daemon) ---
-WS_URL = (os.environ.get("WS_URL") or "ws://raspberrypi.local:8765").strip()
+WS_URL = (os.environ.get("WS_URL") or "ws://10.66.151.86:8765").strip()
 
 # --- Timing (mirror former hardware/main loop) ---
 MAIN_LOOP_INTERVAL_SEC = 0.05

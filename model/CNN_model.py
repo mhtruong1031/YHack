@@ -24,8 +24,10 @@ SEED = 42
 EARLY_STOP_PATIENCE = 7
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Samsung IP Webcam stream
-STREAM_URL = "http://10.66.241.75:8080/video"
+# Logitech Brio 100 webcam
+CAMERA_INDEX = 0
+CAMERA_WIDTH = 1280
+CAMERA_HEIGHT = 720
 
 # Map dataset classes to disposal groups
 DISPOSAL_MAP = {
@@ -241,8 +243,10 @@ def train_model():
 
         scheduler.step(val_acc)
 
+        current_lr = optimizer.param_groups[0]["lr"]
         print(
             f"Epoch [{epoch + 1}/{EPOCHS}] | "
+            f"LR: {current_lr:.6f} | "
             f"Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.4f} | "
             f"Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.4f}"
         )
@@ -328,18 +332,18 @@ def detect_object_region(frame):
 
 def get_box_color(category):
     if category == "recycle":
-        return (0, 255, 0)      # Green
+        return (0, 255, 0)
     elif category == "compost":
-        return (0, 165, 255)    # Orange
+        return (0, 165, 255)
     else:
-        return (0, 0, 255)      # Red
+        return (0, 0, 255)
 
 
 def draw_label_block(frame, predicted_class, disposal_category, confidence):
     """
-    Draws the main camera overlay text.
+    Draw the camera overlay text.
     """
-    cv2.rectangle(frame, (10, 10), (420, 140), (30, 30, 30), -1)
+    cv2.rectangle(frame, (10, 10), (450, 145), (30, 30, 30), -1)
 
     cv2.putText(
         frame,
@@ -418,17 +422,23 @@ def run_camera_inference():
 
     model, class_names = load_model(MODEL_SAVE_PATH)
 
-    cap = cv2.VideoCapture(STREAM_URL)
+    cap = cv2.VideoCapture(CAMERA_INDEX)
 
     if not cap.isOpened():
-        raise RuntimeError(f"Could not open camera stream: {STREAM_URL}")
+        raise RuntimeError(f"Could not open webcam at index: {CAMERA_INDEX}")
 
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, CAMERA_WIDTH)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, CAMERA_HEIGHT)
+
+    actual_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    actual_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    print(f"Webcam opened at {actual_width}x{actual_height}")
     print("Press 'q' to quit.")
 
     while True:
         ret, frame = cap.read()
         if not ret:
-            print("Failed to grab frame from stream")
+            print("Failed to grab frame from webcam")
             break
 
         predicted_class, confidence, disposal_category, box = predict_frame(
@@ -444,7 +454,7 @@ def run_camera_inference():
             cv2.putText(
                 frame,
                 "No object detected",
-                (20, 170),
+                (20, 180),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.7,
                 (0, 0, 255),

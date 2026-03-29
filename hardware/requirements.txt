@@ -1,2 +1,4 @@
 gpiozero>=2.0
 websockets>=12.0
+# Pin factory for gpiozero (required on Raspberry Pi OS; not installed automatically with gpiozero alone)
+RPi.GPIO>=0.7.1
