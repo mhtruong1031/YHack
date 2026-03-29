@@ -1,5 +1,5 @@
 """
-Server-side configuration: WebSocket to Pi, CNN, camera, API, proximity tuning.
+Server-side configuration: WebSocket to Pi, Gemini vision, camera, API, proximity.
 """
 
 import os
@@ -24,11 +24,25 @@ SORT_COOLDOWN_SEC = 2.0
 # Repeat execute_sort on Pi while distance still below baseline - margin
 MAX_SORT_RETRIES = 5
 
-# --- Vision (PyTorch CNN) ---
-CNN_MODEL_WEIGHTS_PATH = ""
+# --- Vision (Gemini + OpenCV) ---
+GEMINI_API_KEY_ENV = "GEMINI_API_KEY"
+GEMINI_MODEL_NAME = os.environ.get("GEMINI_MODEL_NAME", "gemini-3-flash-preview")
+# Placeholder JPEG size when API key unset (headless / tests)
 CNN_IMAGE_SIZE = 224
-CNN_CLASS_LABELS = SORT_LABELS
-CAMERA_DEVICE_INDEX = 0
+CAMERA_DEVICE_INDEX = int(os.environ.get("CAMERA_DEVICE_INDEX", "0"))
+# Empty = default backend; "V4L2" for Linux (see model/gemini_model.py)
+CAMERA_CAPTURE_BACKEND = (os.environ.get("CAMERA_CAPTURE_BACKEND") or "").strip()
+
+# Sustained mean-luminance change vs EWMA baseline (grayscale 0–255 scale)
+LIGHTING_TRIGGER_ENABLED = os.environ.get("LIGHTING_TRIGGER", "1").lower() not in (
+    "0",
+    "false",
+    "no",
+)
+LIGHTING_EWMA_ALPHA = float(os.environ.get("LIGHTING_EWMA_ALPHA", "0.06"))
+LIGHTING_DELTA_GRAY = float(os.environ.get("LIGHTING_DELTA_GRAY", "12"))
+LIGHTING_HOLD_SEC = float(os.environ.get("LIGHTING_HOLD_SEC", "0.6"))
+LIGHTING_POLL_INTERVAL_SEC = float(os.environ.get("LIGHTING_POLL_INTERVAL_SEC", "0.04"))
 
 # --- API ---
 API_BASE_URL = ""

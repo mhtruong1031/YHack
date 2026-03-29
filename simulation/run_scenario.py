@@ -232,6 +232,8 @@ def main() -> int:
 
         env_srv = env_base.copy()
         env_srv["WS_URL"] = ws_uri
+        # Headless sim: no camera; keep proximity-only triggers on the server.
+        env_srv.setdefault("LIGHTING_TRIGGER", "0")
         main_py = _REPO_ROOT / "server" / "main.py"
         logger.info("Starting server: %s", main_py)
         proc_srv = subprocess.Popen(

@@ -52,53 +52,61 @@ export function Leaderboard() {
 
   return (
     <AppLayout>
-      <div className="row" style={{ marginBottom: "1rem" }}>
-          <span className="muted">Scope</span>
-          <button
-            type="button"
-            className={scope === "lifetime" ? "primary" : undefined}
-            onClick={() => setScope("lifetime")}
-          >
-            Lifetime
-          </button>
-          <button
-            type="button"
-            className={scope === "weekly" ? "primary" : undefined}
-            onClick={() => setScope("weekly")}
-          >
-            Weekly
-          </button>
+      <div className="row fade-in-up" style={{ marginBottom: "1.5rem" }}>
+          <div className="segment-control">
+            <button
+              type="button"
+              className={scope === "lifetime" ? "primary" : undefined}
+              onClick={() => setScope("lifetime")}
+            >
+              Lifetime
+            </button>
+            <button
+              type="button"
+              className={scope === "weekly" ? "primary" : undefined}
+              onClick={() => setScope("weekly")}
+            >
+              Weekly
+            </button>
+          </div>
           <Link to="/" className="muted" style={{ marginLeft: "auto" }}>
             Home
           </Link>
         </div>
-        {loading && <p className="muted">Loading…</p>}
-        {err && <p className="status-line error">{err}</p>}
+        {loading && <p className="muted fade-in-up-delay-1">Loading…</p>}
+        {err && <p className="status-line error fade-in-up-delay-1">{err}</p>}
         {!loading && !err && (
-          <div className="table-wrap">
+          <div className="table-wrap fade-in-up-delay-1">
             <table>
               <thead>
                 <tr>
-                  <th>#</th>
+                  <th>Rank</th>
                   <th>Friend</th>
-                  <th>Recycled value</th>
+                  <th>Recycled Value</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.length === 0 ? (
                   <tr>
-                    <td colSpan={3} className="muted">
+                    <td colSpan={3} className="muted" style={{ textAlign: "center" }}>
                       No entries yet.
                     </td>
                   </tr>
                 ) : (
-                  rows.map((r, i) => (
-                    <tr key={r.sub}>
-                      <td>{r.rank ?? i + 1}</td>
-                      <td>{r.name ?? r.sub}</td>
-                      <td>{formatUsd(r.points)}</td>
-                    </tr>
-                  ))
+                  rows.map((r, i) => {
+                    const rank = r.rank ?? i + 1;
+                    const rankClass = rank <= 3 ? `rank-text-${rank}` : "";
+                    
+                    return (
+                      <tr key={r.sub}>
+                        <td>
+                          <span className={rankClass}>{rank}</span>
+                        </td>
+                        <td style={{ fontWeight: 500 }}>{r.name ?? r.sub}</td>
+                        <td style={{ color: "var(--success)", fontWeight: 600 }}>{formatUsd(r.points)}</td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

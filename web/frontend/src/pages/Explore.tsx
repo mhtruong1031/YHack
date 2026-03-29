@@ -125,7 +125,7 @@ export function Explore() {
 
   return (
     <AppLayout>
-      <div className="row" style={{ marginBottom: "0.5rem" }}>
+      <div className="row fade-in-up" style={{ marginBottom: "1rem" }}>
           <span className="badge" title="Updates when your hardware sends a new sort">
             Your recycled value:{" "}
             {myRecycledUsd === null ? "…" : formatUsd(myRecycledUsd)}
@@ -134,31 +134,30 @@ export function Explore() {
             Home
           </Link>
         </div>
-        {msg && <p className="status-line ok">{msg}</p>}
-        {err && <p className="status-line error">{err}</p>}
+        {msg && <p className="status-line ok fade-in-up">{msg}</p>}
+        {err && <p className="status-line error fade-in-up">{err}</p>}
 
-        <h2 style={{ fontSize: "1rem", margin: "1rem 0 0.5rem" }}>Find people</h2>
-        <input
-          type="search"
-          placeholder="Search by name…"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          style={{ maxWidth: "100%" }}
-        />
-        <ul style={{ listStyle: "none", padding: 0, margin: "0.75rem 0 0" }}>
+        <h2 className="fade-in-up-delay-1" style={{ fontSize: "1.1rem", margin: "1.5rem 0 0.75rem", letterSpacing: "0.02em" }}>Find people</h2>
+        <div className="fade-in-up-delay-1">
+          <input
+            type="search"
+            placeholder="Search by name…"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            style={{ maxWidth: "100%", boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}
+          />
+        </div>
+        <ul className="fade-in-up-delay-1 stack" style={{ listStyle: "none", padding: 0, margin: "1rem 0 0" }}>
           {hits.map((u) => (
             <li
               key={u.sub}
-              className="row"
-              style={{
-                justifyContent: "space-between",
-                padding: "0.5rem 0",
-                borderBottom: "1px solid rgba(255,255,255,0.06)",
-              }}
+              className="row glass-panel"
+              style={{ justifyContent: "space-between" }}
             >
-              <span>{u.name ?? u.sub}</span>
+              <span style={{ fontWeight: 500 }}>{u.name ?? u.sub}</span>
               <button
                 type="button"
+                className="primary"
                 disabled={busy === u.sub}
                 onClick={() => void onRequest(u.sub)}
               >
@@ -168,24 +167,20 @@ export function Explore() {
           ))}
         </ul>
 
-        <h2 style={{ fontSize: "1rem", margin: "1.25rem 0 0.5rem" }}>
+        <h2 className="fade-in-up-delay-2" style={{ fontSize: "1.1rem", margin: "2rem 0 0.75rem", letterSpacing: "0.02em" }}>
           Pending requests
         </h2>
         {pending.length === 0 ? (
-          <p className="muted">No pending invites.</p>
+          <p className="muted fade-in-up-delay-2">No pending invites.</p>
         ) : (
-          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+          <ul className="fade-in-up-delay-2 stack" style={{ listStyle: "none", padding: 0, margin: 0 }}>
             {pending.map((p) => (
               <li
                 key={p.from_sub}
-                className="row"
-                style={{
-                  justifyContent: "space-between",
-                  padding: "0.5rem 0",
-                  borderBottom: "1px solid rgba(255,255,255,0.06)",
-                }}
+                className="row glass-panel"
+                style={{ justifyContent: "space-between" }}
               >
-                <span>{p.name ?? p.from_sub}</span>
+                <span style={{ fontWeight: 500 }}>{p.name ?? p.from_sub}</span>
                 <div className="row">
                   <button
                     type="button"

@@ -394,8 +394,11 @@ export function Plinko() {
 
   return (
     <AppLayout>
-      <div className="row" style={{ marginBottom: "0.75rem" }}>
-          <span className="badge">
+      <div className="row fade-in-up" style={{ marginBottom: "1rem" }}>
+          <span className="badge" style={{ 
+            borderColor: wsStatus === "open" ? "rgba(126, 231, 135, 0.4)" : undefined, 
+            color: wsStatus === "open" ? "var(--success)" : undefined 
+          }}>
             WS: {wsStatus === "open" ? "live" : wsStatus}
           </span>
           {lastEvent && <span className="muted">{lastEvent}</span>}
@@ -404,13 +407,16 @@ export function Plinko() {
             Home
           </Link>
         </div>
-        <p className="muted" style={{ marginTop: 0 }}>
-          When your device sends a sort, a ball appears here. Your total recycled value
-          updates from that request; finishing in a slot confirms the same deposit
-          estimate in your ledger (no extra “points” from the slot).
-        </p>
+        <div className="glass-info-box fade-in-up-delay-1">
+          <p className="muted" style={{ margin: 0, lineHeight: 1.5 }}>
+            When your device sends a sort, a ball appears here. Your total recycled value
+            updates from that request; finishing in a slot confirms the same deposit
+            estimate in your ledger (no extra “points” from the slot).
+          </p>
+        </div>
         <div
           ref={panelRef}
+          className="fade-in-up-delay-2"
           style={{ width: "100%", minWidth: 0 }}
         >
           <div
@@ -418,10 +424,12 @@ export function Plinko() {
             style={{
               width: "100%",
               minHeight: 480,
-              borderRadius: 8,
+              borderRadius: 16,
               overflow: "hidden",
-              border: "1px solid rgba(255,255,255,0.12)",
-              background: "rgba(0,0,0,0.15)",
+              border: "1px solid rgba(255,255,255,0.15)",
+              background: "rgba(10,20,40,0.45)",
+              backdropFilter: "blur(12px)",
+              boxShadow: "0 12px 40px rgba(0,0,0,0.3)"
             }}
           />
           <div
