@@ -2,6 +2,43 @@
 
 A trash-sorting stack that pairs a **Raspberry Pi** (ultrasonic sensing and servo actuation) with a **laptop** (camera + CNN classification), backed by a **React + FastAPI** web app: Auth0 login, friend graph, friend-scoped leaderboards, and a **Plinko** mini-game fed by real bin drops—Gemini estimates value, the backend pushes over WebSocket, and the client renders balls with Matter.js in a macOS-style UI.
 
+## Architecture
+
+The system is four cooperating layers: **physical edge** (Pi), **orchestrator** (laptop `server/`), **cloud API + DB** (`web/backend` + MongoDB), and **SPA** (`web/frontend`). They talk over two different channels: a **device WebSocket** (Pi protocol in `shared/protocol.py`) and **HTTPS** (REST + optional Auth0 JWT WebSocket for Plinko).
+
+```mermaid
+flowchart LR
+  subgraph edge [Raspberry Pi]
+    HW[hardware: calibration + GPIO + ws_service]
+  end
+  subgraph laptop [Laptop server]
+    SRV[server/main.py: proximity loop + CNN]
+  end
+  subgraph backend [FastAPI + MongoDB]
+    API[REST: me, friends, leaderboard, plinko/award]
+    INT[internal/drops: device Bearer + multipart]
+    WS["/ws/plinko: JWT + drop push"]
+    GEM[Gemini value estimate]
+  end
+  subgraph client [Vite React SPA]
+    UI[Explore / Leaderboard / Plinko]
+  end
+  HW <-->|JSON over WebSocket| SRV
+  SRV -->|POST frame| INT
+  INT --> GEM
+  GEM --> INT
+  UI -->|Bearer JWT| API
+  UI <-->|JWT query param| WS
+```
+
+**Physical sort loop.** The Pi calibrates ultrasonic baseline, then exposes `get_distance` and `execute_sort` messages. The laptop polls distance; when proximity holds long enough it captures a frame, runs `analysis` (PyTorch CNN), sends the label to the Pi, and retries if the chute still reads “occupied.” After a cycle it may notify a generic HTTP endpoint (`API_BASE_URL`) and posts the JPEG to **`POST /internal/drops`** with a shared **device ingest secret** (not Auth0).
+
+**Backend responsibilities.** FastAPI mounts routers under `/api/*` for authenticated users (JWT from Auth0 JWKS) and `/internal/*` for trusted devices. On drop ingest the API resizes the image, calls **Gemini** for an estimated USD recyclable value, stores a **`drops`** document, and—only if **exactly one** Plinko WebSocket client is connected across all users—pre-inserts a **`point_ledger`** row for that user and pushes a `type: drop` JSON message (including a data-URL image) to that session. Otherwise it skips the WebSocket push (no duplicate awards when zero or many clients are on Plinko).
+
+**Plinko and scoring.** The browser opens `/ws/plinko?token=…` with the same JWT. The client runs **Matter.js** physics; when a ball settles it calls **`POST /api/plinko/award`** with `drop_id` and points. The ledger uses a unique index on `(user_sub, drop_id)` so awards are idempotent. **`/api/leaderboard`** aggregates **`point_ledger`** by `gemini_value` for **accepted friends only** (lifetime or current **week_id**). **`/api/me`** upserts the user profile from token claims and returns **lifetime** point totals from the ledger.
+
+**Simulation.** `simulation/run_scenario.py` starts a **virtual Pi** on localhost that speaks the same laptop-facing protocol; a harness uses extra pin messages the production server must not send. This lets you run the orchestrator and assert JSON scenarios without hardware.
+
 ## Repository layout
 
 | Path | Role | Details |

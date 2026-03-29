@@ -1,7 +1,7 @@
 import { useAuth0 } from "@auth0/auth0-react";
 import { useEffect } from "react";
 import { Navigate } from "react-router-dom";
-import { MacWindow } from "../components/MacWindow";
+import { AppLayout } from "../components/AppLayout";
 
 export function Login() {
   const { loginWithRedirect, isAuthenticated, isLoading } = useAuth0();
@@ -16,27 +16,28 @@ export function Login() {
   }
 
   return (
-    <div className="page-wrap">
-      <MacWindow title="Sign in">
-        <div className="stack" style={{ alignItems: "center", textAlign: "center" }}>
-          <p className="muted">
-            {isAuthenticated
-              ? "You are signed in."
-              : "Redirecting to Auth0…"}
-          </p>
-          {!isAuthenticated && !isLoading && (
-            <button
-              type="button"
-              className="primary"
-              onClick={() =>
-                loginWithRedirect({ appState: { returnTo: "/explore" } })
-              }
-            >
-              Continue with login
-            </button>
-          )}
-        </div>
-      </MacWindow>
-    </div>
+    <AppLayout navMinimal>
+      <div
+        className="stack"
+        style={{ alignItems: "center", textAlign: "center", paddingTop: "2rem" }}
+      >
+        <p className="muted">
+          {isAuthenticated
+            ? "You are signed in."
+            : "Redirecting to Auth0…"}
+        </p>
+        {!isAuthenticated && !isLoading && (
+          <button
+            type="button"
+            className="primary landing-cta-liquid"
+            onClick={() =>
+              loginWithRedirect({ appState: { returnTo: "/explore" } })
+            }
+          >
+            Continue with login
+          </button>
+        )}
+      </div>
+    </AppLayout>
   );
 }

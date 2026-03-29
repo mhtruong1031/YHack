@@ -9,9 +9,20 @@ import { Splash } from "./pages/Splash";
 
 function AppWithAuth() {
   const navigate = useNavigate();
-  const domain = import.meta.env.VITE_AUTH0_DOMAIN;
-  const clientId = import.meta.env.VITE_AUTH0_CLIENT_ID;
-  const audience = import.meta.env.VITE_AUTH0_AUDIENCE;
+  const domain = import.meta.env.VITE_AUTH0_DOMAIN?.trim();
+  const clientId = import.meta.env.VITE_AUTH0_CLIENT_ID?.trim();
+  const audience = import.meta.env.VITE_AUTH0_AUDIENCE?.trim();
+
+  if (!domain || !clientId) {
+    return (
+      <div className="page-wrap">
+        <p>
+          Set <code>VITE_AUTH0_DOMAIN</code> and <code>VITE_AUTH0_CLIENT_ID</code> in{" "}
+          <code>.env</code> (see <code>.env.example</code>).
+        </p>
+      </div>
+    );
+  }
 
   return (
     <Auth0Provider
